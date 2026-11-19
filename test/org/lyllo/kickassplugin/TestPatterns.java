@@ -1,4 +1,4 @@
-package org.lyllo.kickassplugin;
+package at.laplace.tmpxplugin;
 
 import java.util.regex.Matcher;
 

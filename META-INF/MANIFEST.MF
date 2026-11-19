@@ -1,9 +1,9 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
-Bundle-Name: Kick Assembler Plug-in
-Bundle-SymbolicName: org.lyllo.kickassplugin; singleton:=true
-Bundle-Version: 0.9.29
-Bundle-Activator: org.lyllo.kickassplugin.Activator
+Bundle-Name: Turbo Macro Pro Cross Assembler Plug-in
+Bundle-SymbolicName: at.scch.tmpxplugin;singleton:=true
+Bundle-Version: 1.0.0
+Bundle-Activator: at.laplace.tmpxplugin.Activator
 Bundle-ActivationPolicy: lazy
 Bundle-Localization: plugin
 Require-Bundle: org.eclipse.core.runtime,
@@ -22,5 +22,5 @@ Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.ui.navigator,
  org.eclipse.core.filesystem
 Eclipse-LazyStart: true
-Bundle-Vendor: P-a Backstrom, A. Reek, D. Mitte
-Bundle-RequiredExecutionEnvironment: J2SE-1.5
+Bundle-Vendor: M. Pfeiffer, P-a Backstrom, A. Reek, D. Mitte
+Bundle-RequiredExecutionEnvironment: JavaSE-25

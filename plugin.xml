@@ -4,52 +4,52 @@
    <extension
          point="org.eclipse.ui.editors">
       <editor
-            class="org.lyllo.kickassplugin.editor.ASMEditor"
+            class="at.laplace.tmpxplugin.editor.ASMEditor"
             contributorClass="org.eclipse.ui.editors.text.TextEditorActionContributor"
             default="true"
             extensions="asm, inc, s, sym"
             icon="icons/16/asm.gif"
-            id="KickAssPlugin.editor1"
+            id="TMPxPlugin.editor"
             name="%editor.name">
-              <contentTypeBinding contentTypeId="org.lyllo.kickassplugin.asm.contenttypeMod" />
+              <contentTypeBinding contentTypeId="at.laplace.tmpxplugin.asm.contenttypeMod" />
             </editor>
    </extension>
    <extension
          point="org.eclipse.ui.preferencePages">
       <page
-            class="org.lyllo.kickassplugin.ui.PreferencesGeneral"
-            id="org.lyllo.kickassplugin.preferences.general"
+            class="at.laplace.tmpxplugin.ui.PreferencesGeneral"
+            id="at.laplace.tmpxplugin.preferences.general"
             name="%preferences.general.name"/>
       <page
-            category="org.lyllo.kickassplugin.preferences.general"
-            class="org.lyllo.kickassplugin.ui.PreferencesCompiler"
-            id="org.lyllo.kickassplugin.preferences.compiler"
+            category="at.laplace.tmpxplugin.preferences.general"
+            class="at.laplace.tmpxplugin.ui.PreferencesCompiler"
+            id="at.laplace.tmpxplugin.preferences.compiler"
             name="%preferences.compiler.name"/>
       <page
-            category="org.lyllo.kickassplugin.preferences.general"
-            class="org.lyllo.kickassplugin.ui.PreferencesDebugger"
-            id="org.lyllo.kickassplugin.preferences.debugger"
+            category="at.laplace.tmpxplugin.preferences.general"
+            class="at.laplace.tmpxplugin.ui.PreferencesDebugger"
+            id="at.laplace.tmpxplugin.preferences.debugger"
             name="%preferences.debugger.name"/>
 	   <page
-            category="org.lyllo.kickassplugin.preferences.general"
-            class="org.lyllo.kickassplugin.ui.PreferencesTemplates"
-            id="org.lyllo.kickassplugin.preferences.templates"
+            category="at.laplace.tmpxplugin.preferences.general"
+            class="at.laplace.tmpxplugin.ui.PreferencesTemplates"
+            id="at.laplace.tmpxplugin.preferences.templates"
             name="%preferences.templates.name"/>
    </extension>
    <extension
          id="nature"
-         name="Kick Assembler Nature"
+         name="TMPx Assembler Nature"
          point="org.eclipse.core.resources.natures">
       <runtime>
-         <run class="org.lyllo.kickassplugin.KickAssemblerNature"/>
+         <run class="at.laplace.tmpxplugin.TmpNature"/>
       </runtime>
    </extension>
    <extension
          point="org.eclipse.ui.ide.projectNatureImages">
       <image
             icon="icons/8/asm.gif"
-            id="org.lyllo.kickassplugin.nature.image"
-            natureId="org.lyllo.kickassplugin.nature"/>
+            id="at.laplace.tmpxplugin.nature.image"
+            natureId="at.laplace.tmpxplugin.nature"/>
    </extension>
    <extension
          id="builder"
@@ -58,17 +58,17 @@
       <builder
             hasNature="false"
             isConfigurable="false">
-         <run class="org.lyllo.kickassplugin.KickAssemblerBuilder"/>
+         <run class="at.laplace.tmpxplugin.TmpBuilder"/>
       </builder>
    </extension>
    <extension
    		 point="org.eclipse.ui.newWizards">
       <wizard
-            category="org.lyllo.kickassplugin.new.category"
-            class="org.lyllo.kickassplugin.ui.WizardNewProject"
+            category="at.laplace.tmpxplugin.new.category"
+            class="at.laplace.tmpxplugin.ui.WizardNewProject"
             hasPages="true"
             icon="icons/16/new_asm_project.gif"
-            id="org.lyllo.kickassplugin.new.project"
+            id="at.laplace.tmpxplugin.new.project"
             name="%new.project.name"
             project="true">
          <description>
@@ -77,11 +77,11 @@
       </wizard>
       <wizard
             canFinishEarly="true"
-            category="org.lyllo.kickassplugin.new.category"
-            class="org.lyllo.kickassplugin.ui.WizardNewFile"
+            category="at.laplace.tmpxplugin.new.category"
+            class="at.laplace.tmpxplugin.ui.WizardNewFile"
             hasPages="true"
             icon="icons/16/new_asm_file.gif"
-            id="org.lyllo.kickassplugin.new.file"
+            id="at.laplace.tmpxplugin.new.file"
             name="%new.file.name"
             project="false">
          <description>
@@ -89,21 +89,21 @@
          </description>
       </wizard>
       <category
-            id="org.lyllo.kickassplugin.new.category"
+            id="at.laplace.tmpxplugin.new.category"
             name="%new.category"/>
    </extension>
    <extension
          point="org.eclipse.ui.actionSets">
       <actionSet
-            id="org.lyllo.kickassplugin.actionSet.helper"
+            id="at.laplace.tmpxplugin.actionSet.helper"
             label="%actionset.asmhelper"
             visible="true">
          <action
-               class="org.lyllo.kickassplugin.ui.AsciiAction"
+               class="at.laplace.tmpxplugin.ui.AsciiAction"
                disabledIcon="icons/16/ascii_on.gif"
                hoverIcon="icons/16/ascii_on.gif"
                icon="icons/16/ascii_on.gif"
-               id="org.lyllo.kickassplugin.ascii.wizard.RunWizardAction"
+               id="at.laplace.tmpxplugin.ascii.wizard.RunWizardAction"
                label="%ascii.dialog.action.name"
                toolbarPath="toolbar.asm"
                tooltip="%ascii.dialog.action.tooltip" />
@@ -113,49 +113,49 @@
          point="org.eclipse.ui.commands">
       <command
             categoryId="org.eclipse.ui.category.edit"
-            id="org.lyllo.kickassplugin.toggle.comment"
+            id="at.laplace.tmpxplugin.toggle.comment"
             name="%command.toggle.comment.name"/>
       <command
             categoryId="org.eclipse.ui.category.edit"
-            id="org.lyllo.kickassplugin.trigger.build"
+            id="at.laplace.tmpxplugin.trigger.build"
             name="Trigger Build"/>
    </extension>
    <extension
          point="org.eclipse.ui.bindings">
       <key
-            commandId="org.lyllo.kickassplugin.toggle.comment"
-            contextId="org.lyllo.kickassplugin.editorScope"
+            commandId="at.laplace.tmpxplugin.toggle.comment"
+            contextId="at.laplace.tmpxplugin.editorScope"
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
             sequence="M1+M2+C"/>
       <key
-            commandId="org.lyllo.kickassplugin.toggle.comment"
-            contextId="org.lyllo.kickassplugin.editorScope"
+            commandId="at.laplace.tmpxplugin.toggle.comment"
+            contextId="at.laplace.tmpxplugin.editorScope"
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
             sequence="M1+7"/>
       <key
-            commandId="org.lyllo.kickassplugin.toggle.comment"
-            contextId="org.lyllo.kickassplugin.editorScope"
+            commandId="at.laplace.tmpxplugin.toggle.comment"
+            contextId="at.laplace.tmpxplugin.editorScope"
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
             sequence="M1+/"/>
        <key
-            commandId="org.lyllo.kickassplugin.trigger.build"
-            contextId="org.lyllo.kickassplugin.editorScope"
+            commandId="at.laplace.tmpxplugin.trigger.build"
+            contextId="at.laplace.tmpxplugin.editorScope"
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
       	    sequence="M3+F11"/>
    </extension>
    <extension
          point="org.eclipse.ui.contexts">
       <context
-            id="org.lyllo.kickassplugin.editorScope"
+            id="at.laplace.tmpxplugin.editorScope"
             name="%context.scope"
             parentId="org.eclipse.ui.textEditorScope"/>
    </extension>
    <extension
          point="org.eclipse.debug.ui.launchShortcuts">
       <shortcut
-            class="org.lyllo.kickassplugin.launch.ASMLaunchShortcut"
+            class="at.laplace.tmpxplugin.launch.ASMLaunchShortcut"
             icon="icons/16/launch.gif"
-            id="org.lyllo.kickassplugin.shortcut"
+            id="at.laplace.tmpxplugin.shortcut"
             label="%launcher.name"
             modes="run, debug">
          <contextualLaunch>
@@ -183,8 +183,8 @@
    <extension
          point="org.eclipse.debug.core.launchConfigurationTypes">
       <launchConfigurationType
-            delegate="org.lyllo.kickassplugin.launch.ASMLauncher"
-            id="org.lyllo.kickassplugin.launch"
+            delegate="at.laplace.tmpxplugin.launch.ASMLauncher"
+            id="at.laplace.tmpxplugin.launch"
             modes="run, debug"
             name="%launcher.config.name"
             public="true"/>
@@ -192,16 +192,16 @@
    <extension
          point="org.eclipse.debug.ui.launchConfigurationTabGroups">
       <launchConfigurationTabGroup
-            class="org.lyllo.kickassplugin.launch.ASMLaunchTabGroup"
-            id="org.lyllo.kickassplugin.launch.tabs"
-            type="org.lyllo.kickassplugin.launch"/>
+            class="at.laplace.tmpxplugin.launch.ASMLaunchTabGroup"
+            id="at.laplace.tmpxplugin.launch.tabs"
+            type="at.laplace.tmpxplugin.launch"/>
    </extension>
    <extension
          point="org.eclipse.debug.ui.launchConfigurationTypeImages">
       <launchConfigurationTypeImage
-            configTypeID="org.lyllo.kickassplugin.launch"
+            configTypeID="at.laplace.tmpxplugin.launch"
             icon="icons/16/launch.gif"
-            id="org.lyllo.kickassplugin.launch.image"/>
+            id="at.laplace.tmpxplugin.launch.image"/>
    </extension>
    <extension
          point="org.eclipse.help.toc">
@@ -212,10 +212,10 @@
    <extension
          point="org.eclipse.ui.popupMenus">
       <objectContribution
-            id="org.lyllo.kickassplugin.contribution1"
+            id="at.laplace.tmpxplugin.contribution1"
             objectClass="org.eclipse.core.resources.IProject">
          <menu
-               id="org.lyllo.kickassplugin.menu1"
+               id="at.laplace.tmpxplugin.menu1"
                label="Build Path"
                path="edit">
             <separator
@@ -223,11 +223,11 @@
             </separator>
          </menu>
          <action
-               class="org.lyllo.kickassplugin.popup.actions.BuildpathAction"
+               class="at.laplace.tmpxplugin.popup.actions.BuildpathAction"
                enablesFor="1"
-               id="org.lyllo.kickassplugin.newAction"
+               id="at.laplace.tmpxplugin.newAction"
                label="Configure Build Path"
-               menubarPath="org.lyllo.kickassplugin.menu1/group1">
+               menubarPath="at.laplace.tmpxplugin.menu1/group1">
          </action>
          <enablement>
 	     <or>
@@ -236,7 +236,7 @@
 	         <adapt type="org.eclipse.core.resources.IResource">
 	             <test
 	                   property="org.eclipse.core.resources.projectNature"
-	                   value="org.lyllo.kickassplugin.nature">
+	                   value="at.laplace.tmpxplugin.nature">
 	             </test>
 	         </adapt>
 	     </or>
@@ -252,8 +252,8 @@
          <page
             name="Build Path"
             nameFilter="*"
-            class="org.lyllo.kickassplugin.ui.BuildPathPropertyPage"
-            id="org.lyllo.kickassplugin.buildPathPropertyPage">
+            class="at.laplace.tmpxplugin.ui.BuildPathPropertyPage"
+            id="at.laplace.tmpxplugin.buildPathPropertyPage">
       		 <enabledWhen>
       		 <and>
              <instanceof
@@ -262,7 +262,7 @@
               <adapt type="org.eclipse.core.resources.IResource">
 	             <test
 	                   property="org.eclipse.core.resources.projectNature"
-	                   value="org.lyllo.kickassplugin.nature">
+	                   value="at.laplace.tmpxplugin.nature">
 	             </test>
 	         </adapt>
 	         </and>
@@ -270,10 +270,10 @@
       	</page>
    </extension>
    <extension
-         id="org.lyllo.kickassplugin.asm.contentType"
+         id="at.laplace.tmpxplugin.asm.contentType"
          point="org.eclipse.core.contenttype.contentTypes">
       <content-type
-            id="org.lyllo.kickassplugin.asm.contenttypeMod"
+            id="at.laplace.tmpxplugin.asm.contenttypeMod"
             file-extensions="asm,inc,sym,s"
             base-type="org.eclipse.core.runtime.text"
             name="KickAssembler File"

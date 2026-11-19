@@ -1,6 +1,8 @@
-# kickass-plugin 
-Eclipse plugin for convenient Kick Assembling binaries for the Commodore 64
+# tmpx-plugin
+ 
+Eclipse plugin for convenient Turbo Macro Pro Cross Assembling binaries for the Commodore 64
 
+    Based on the project kickass-plugin, https://github.com/p-a/kickass-plugin
     Copyright (C) 2012 P-a Backstrom under General Public License (v2).
    
     Based on the project ASM Plugin, http://sourceforge.net/projects/asmplugin
@@ -31,6 +33,7 @@ Eclipse plugin for convenient Kick Assembling binaries for the Commodore 64
 ## Requirements
 * For build support you will need the latest version of the Kick Assembler jar. [Kick Assembler](http://theweb.dk/KickAssembler/)
 * VICE for running/debugging [VICE](http://vice-emu.sourceforge.net/)
+* C64U for running on hardware
 
 ## Installation
 Either download the zip-file from github [Downloads](https://github.com/p-a/kickass-plugin/downloads)
