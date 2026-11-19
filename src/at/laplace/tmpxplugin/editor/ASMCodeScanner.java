@@ -141,9 +141,12 @@ public class ASMCodeScanner extends RuleBasedScanner implements IPropertyChangeL
 		IRule labelRule = new IRule() {
 
 			public IToken evaluate(ICharacterScanner scanner) {
-				int count = 0;
 				IToken token = Token.UNDEFINED;
-				count++;
+				if (scanner.getColumn() != 0) {
+				    return token;
+				}
+				
+				int count = 1;
 				StringBuffer buf = new StringBuffer();
 				int c = 0;
 				if(Character.isJavaIdentifierStart((c=scanner.read()))){
@@ -152,10 +155,8 @@ public class ASMCodeScanner extends RuleBasedScanner implements IPropertyChangeL
 						count++;
 						buf.append((char)c);
 					}
-					if (c == ':'){
-						token = segmentToken;
-						tokenFound(new ITokenMatch(buf.toString(), scanner.getColumn(), token));
-					}
+					token = segmentToken;
+					tokenFound(new ITokenMatch(buf.toString(), scanner.getColumn(), token));
 				}
 
 				if (token.equals(Token.UNDEFINED))
