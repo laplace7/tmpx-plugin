@@ -64,10 +64,10 @@ public class PreferencesCompiler extends FieldEditorPreferencePage implements IW
     Composite parent = getFieldEditorParent();
 
     // Field for Compiler-Executable
-    FileFieldEditor compiler = new FileFieldEditor(Constants.PREFERENCES_COMPILER_NAME, Messages.COMPILER_NAME + ": ",
+    FileFieldEditor compiler = new FileFieldEditor(Constants.PREFERENCES_COMPILER_NAME, Messages.COMPILER_NAME,
                                                    true, parent);
     compiler.setEmptyStringAllowed(false);
-    compiler.setFileExtensions(new String[]{"*.jar"});
+    compiler.setFileExtensions(new String[]{"", "*.exe"});
     
     addField(compiler);
 

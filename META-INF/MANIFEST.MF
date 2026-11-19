@@ -1,7 +1,7 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Turbo Macro Pro Cross Assembler Plug-in
-Bundle-SymbolicName: at.scch.tmpxplugin;singleton:=true
+Bundle-SymbolicName: at.laplace.tmpxplugin;singleton:=true
 Bundle-Version: 1.0.0
 Bundle-Activator: at.laplace.tmpxplugin.Activator
 Bundle-ActivationPolicy: lazy

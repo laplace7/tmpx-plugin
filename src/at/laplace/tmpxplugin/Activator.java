@@ -260,7 +260,7 @@ public class Activator extends AbstractUIPlugin implements BundleListener {
 		textAttribute = TextAttributeConverter.textAttributesToPreferenceData(new Color(display, 50, 168, 0), true, false);
 		store.setDefault(Constants.PREFERENCES_TEXTCOLOR_FUNCTION, textAttribute);
 
-		store.setDefault(Constants.PREFERENCES_COMPILER_NAME,"kickass.jar");
+		store.setDefault(Constants.PREFERENCES_COMPILER_NAME,"tmpx");
 		store.setDefault(Constants.PREFERENCES_COMPILER_AFO,false);
 		store.setDefault(Constants.PREFERENCES_COMPILER_SYMBOLS, true);
 		store.setDefault(Constants.PREFERENCES_COMPILER_VICESYMBOLS, true);
@@ -271,7 +271,6 @@ public class Activator extends AbstractUIPlugin implements BundleListener {
 						+ "<template autoinsert=\"true\" context=\"asm.editor.context\" deleted=\"false\" description=\"Basic Upstart.\" enabled=\"true\" name=\"BasicUpstart\">.pc = $$0801 \"Basic Upstart\"&#10;:BasicUpstart(start)&#10;.pc = $$0810 \"Program\"&#10;start:&#10;</template>"
 						+ "</templates>");
 
-		store.setDefault(Constants.PREFERENCES_COMPILER_NAME, "path/to/kickass.jar");
 		store.setDefault(Constants.PREFERENCES_COMPILER_PARAMS, "");
 		store.setDefault(Constants.PREFERENCES_LINKER_NAME, "");
 		store.setDefault(Constants.PREFERENCES_LINKER_PARAMS, "");
@@ -280,16 +279,4 @@ public class Activator extends AbstractUIPlugin implements BundleListener {
 		store.setDefault(Constants.PREFERENCES_DEBUGGER_PARAMS, "-truedrive");
 	}
 
-	public static List<String> getGlobalLibdirs() {
-		List<String> dirs = new ArrayList<String>();
-		IPreferenceStore store = getDefault().getPreferenceStore();
-		String libdirsGlobal = store.getString(Constants.PREFERENCES_COMPILER_LIBDIRS);
-		if (libdirsGlobal != null && !"".equals(libdirsGlobal)){
-			String[] split = libdirsGlobal.split(File.pathSeparator);
-			List<String> splitArray = Arrays.asList(split);
-			dirs.addAll(splitArray);
-		}
-
-		return dirs;
-	}
 }

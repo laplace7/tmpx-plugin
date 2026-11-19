@@ -4,13 +4,11 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
@@ -32,8 +30,6 @@ import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
-
-import at.laplace.tmpxplugin.prefs.ProjectPrefenceHelper;
 
 public class AutocompletionCollector implements IResourceChangeListener, IResourceDeltaVisitor, IResourceVisitor{
 
@@ -233,13 +229,6 @@ public class AutocompletionCollector implements IResourceChangeListener, IResour
             private List<String> initSearchPaths() {
 
                 List<String> searchpaths = new ArrayList<String>();
-                searchpaths.addAll(Arrays.asList(ProjectPrefenceHelper.getSourceDirs(file.getProject())));
-                if (searchpaths.isEmpty()){
-                    searchpaths.add(Constants.DEFAULT_SRC_DIRECTORY);
-                }
-
-                searchpaths.addAll(Arrays.asList(ProjectPrefenceHelper.getLibDirs(file.getProject())));
-                searchpaths.add(file.getParent().getProjectRelativePath().toString());
                 return searchpaths;
             }
         };

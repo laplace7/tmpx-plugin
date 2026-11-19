@@ -269,10 +269,16 @@ public class Constants {
 
 	public static final String DEFAULT_SRC_DIRECTORY = "src";
 
-	public static final String PROJECT_PREFS_BUILD_DIRECTORY_KEY = "at.laplace.tmpxplugin.project.builddir";
+    public static final String PROJECT_PREFS_COMPILER_KEY = "at.laplace.tmpxplugin.project.compiler";
+    public static final String PROJECT_PREFS_CWD_KEY = "at.laplace.tmpxplugin.project.cwd";
+    public static final String PROJECT_PREFS_INPUT_KEY = "at.laplace.tmpxplugin.project.input";
+    public static final String PROJECT_PREFS_BUILD_DIRECTORY_KEY = "at.laplace.tmpxplugin.project.builddir";
+    public static final String PROJECT_PREFS_OUTPUT_KEY = "at.laplace.tmpxplugin.project.output";
+    public static final String PROJECT_PREFS_OPTIONS_KEY = "at.laplace.tmpxplugin.project.options";
+
+    // TODO remove
 	public static final String PROJECT_PREFS_SRC_DIRECTORY_KEY = "at.laplace.tmpxplugin.project.srcdir";
 	public static final String PROJECT_PREFS_LIBDIR_DIRECTORY_KEY = "at.laplace.tmpxplugin.project.libdir";
-    public static final String PROJECT_PREFS_COMPILER_KEY = "at.laplace.tmpxplugin.project.compiler";
     public static final String PROJECT_PREFS_LOCAL_CONF_KEY = "at.laplace.tmpxplugin.project.localconf";
 
 	public static final QualifiedName LABELS_SESSION_KEY = new QualifiedName("LABELS", "LABELS");

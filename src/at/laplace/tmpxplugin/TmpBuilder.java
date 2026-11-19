@@ -21,29 +21,18 @@
  */ 
 package at.laplace.tmpxplugin;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.regex.Matcher;
 
-import org.eclipse.core.resources.IContainer;
-import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceDelta;
 import org.eclipse.core.resources.IResourceDeltaVisitor;
-import org.eclipse.core.resources.IResourceVisitor;
 import org.eclipse.core.resources.IncrementalProjectBuilder;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.preference.IPreferenceStore;
@@ -59,23 +48,22 @@ import at.laplace.tmpxplugin.prefs.ProjectPrefenceHelper;
  */
 public class TmpBuilder extends IncrementalProjectBuilder {
 
-    private IPath[] srcFolders;
     private IProgressMonitor monitor;
-
-    /**
-     * {@inheritDoc}
-     */
-
-    protected IPath[] getSrcFolders(){
-        return srcFolders;
+    
+    public TmpBuilder() {
+        // TODO remove
+        Activator.getConsole().bringConsoleToFront();
+        Activator.getConsole().println("TmpBuilder created");
     }
+    
 
     @Override
     protected IProject[] build(int kind, Map<String,String> args, IProgressMonitor monitor) throws CoreException {
+        // TODO remove
+        Activator.getConsole().bringConsoleToFront();
+        Activator.getConsole().println("TmpBuilder build");
 
         this.monitor = monitor;
-
-        createSrcIPaths();
 
         try {
             IResourceDelta delta = getDelta(getProject());
@@ -94,139 +82,6 @@ public class TmpBuilder extends IncrementalProjectBuilder {
         return null;
     }
 
-    private void getAllIncluders(IFile file, Set<String> visited, Map<String,IFile> srcs) {
-
-        if (file == null)
-            return;
-
-        if (visited.contains(file.getRawLocation().toOSString()) ||
-                (file.getParent() != null && file.getParent().getRawLocation() != null && visited.contains(file.getParent().getRawLocation().toOSString())))
-            return;
-
-        try {
-            IContainer container = file.getParent();
-            monitor.subTask("Searching for resources with " + file.getName() + " as dependency");
-            String filename = file.getName();
-            while (!monitor.isCanceled() && container!= null && container.getType() != IResource.ROOT){
-                SrcCollectingVisitor srcCollectingVisitor = new SrcCollectingVisitor(filename,visited,srcs);
-                IResource[] members = container.members();
-                for(int i = 0; i < members.length && !monitor.isCanceled(); i++){
-                    members[i].accept(srcCollectingVisitor,IResource.DEPTH_ZERO,IResource.NONE);
-                }
-                filename = container.getName()+"/"+filename;
-                container = container.getParent();
-            }
-
-        } catch (CoreException e) {
-            e.printStackTrace();
-        }
-
-    }
-
-    private class SrcCollectingVisitor implements IResourceVisitor {
-
-        private String filename;
-        private Set<String> visited;
-        private Map<String, IFile> srcs;
-
-        public SrcCollectingVisitor(String filename, Set<String> visited, Map<String, IFile> srcs) {
-            this.filename = filename;
-            this.visited = visited;
-            this.srcs = srcs;
-        }
-
-        public boolean visit(IResource arg0) throws CoreException {
-
-            if (arg0 == null || arg0.getRawLocation() == null){
-                return false;
-            }
-            String tmp = arg0.getRawLocation().toOSString();
-            if (visited.contains(tmp)){
-                return false;
-            }
-            visited.add(tmp);
-
-            if (arg0.getType() == IResource.FOLDER){
-
-                if (((IFolder)arg0).findMember(".no_kickass_scan") != null){
-                    return false;
-                }
-                if (matchingSourceFolder(arg0.getProjectRelativePath())){
-                    SrcCollectingVisitor srcCollectingVisitor = new SrcCollectingVisitor("../"+filename, visited,srcs);
-                    for (IResource child: ((IFolder)arg0).members()){
-                        if (!monitor.isCanceled())
-                            child.accept(srcCollectingVisitor,IResource.DEPTH_ZERO,IResource.NONE);
-                    }
-                }
-            } 
-
-            if (arg0.getType() == IResource.FILE){
-
-                if (arg0.getParent().findMember(".no_kickass_scan") != null){
-                    return false;
-                }
-                String ext = arg0.getFileExtension();
-                if (ext != null && Patterns.EXTENSION_PATTERN_ALL.matcher(ext).matches()){
-                    if (containsFilename((IFile) arg0, filename)){
-                        if (Patterns.EXTENSION_PATTERN_MAINFILES.matcher(ext).matches()){
-                            srcs.put(arg0.getRawLocation().toOSString(), (IFile)arg0);
-                        } else {
-                            getAllIncluders((IFile) arg0, new HashSet<String>(),srcs);
-                        }
-                    }
-                } 
-            }
-
-            return true;
-        }
-
-        private boolean containsFilename(IFile arg0, String filename2) throws CoreException {
-
-            boolean retval = false;
-            BufferedReader br = new BufferedReader(new InputStreamReader(arg0.getContents(true)));
-            String line = null;
-            try {
-                while(!retval && (line = br.readLine()) != null){
-                    line = line.toLowerCase();
-                    if (line.contains(".import")){
-                        Matcher matcher = Patterns.IMPORT_SOURCE_PATTERN.matcher(line);
-                        retval = matcher.matches() && matcher.group(1).equalsIgnoreCase(filename2);
-                    } else if (line.contains("#importif")) {
-                        Matcher matcher = Patterns.IMPORTIF_PATTERN.matcher(line);
-                        retval = matcher.matches() && matcher.group(matcher.groupCount()).equalsIgnoreCase(filename2);
-                    } else if (line.contains("#import")) {
-                        Matcher matcher = Patterns.IMPORT_PATTERN.matcher(line);
-                        retval = matcher.matches() && matcher.group(1).equalsIgnoreCase(filename2);
-                    }
-                }
-            } catch (IOException e) {
-            } finally {
-                if (br != null){
-                    try {
-                        br.close();
-                    } catch (IOException e) {
-                    }
-                }
-            }
-
-            return retval;
-        }
-
-
-    }
-
-    private void createSrcIPaths() {
-        String[] split = ProjectPrefenceHelper.getSourceDirs(getProject());
-        if (split.length == 0){
-            split = new String[] {Constants.DEFAULT_SRC_DIRECTORY};
-        }
-        srcFolders = new IPath[split.length];
-
-        for (int i = 0; i < split.length; i++ ){
-            srcFolders[i] =getProject().getFolder(split[i]).getProjectRelativePath();
-        }
-    }
-
     /**
      * Builds the whole project.
      * 
@@ -237,7 +92,9 @@ public class TmpBuilder extends IncrementalProjectBuilder {
         IProject project = getProject();
         monitor.beginTask(Messages.BUILDING_TITLE, 100);
         monitor.subTask(Messages.BUILDING_TEXT_COMPILE);
-        project.accept(new MyFullBuildVisitor(monitor));
+        if (project.hasNature(Constants.NATURE_ID)) {
+            compileProject(project);
+        }
         monitor.done();
         project.refreshLocal(IResource.DEPTH_INFINITE, null);
     }
@@ -260,11 +117,22 @@ public class TmpBuilder extends IncrementalProjectBuilder {
         IProject project = getProject();
         monitor.beginTask(Messages.BUILDING_TITLE, 100);
         monitor.subTask(Messages.BUILDING_TEXT_COMPILE);
-        delta.accept(new MyIncrementalBuildVisitor(monitor));
+        var changeDetector = new MyIncrementalBuildVisitor();
+        delta.accept(changeDetector);
+        if (changeDetector.hasChanged) {
+            compileProject(project);
+        }
         monitor.done();
         project.refreshLocal(IResource.DEPTH_INFINITE, null);
     }
 
+    private static String makeAbsolute(IProject project, String path) {
+        if (new File(path).isAbsolute()) {
+            return path;
+        }
+        return project.getLocationURI().getRawPath() + File.separator + path;
+    }
+    
     /**
      * Compiles a given file.
      * 
@@ -272,54 +140,37 @@ public class TmpBuilder extends IncrementalProjectBuilder {
      * @throws CoreException 
      * @throws IOException 
      */
-    private void compileFile(IFile file) throws CoreException {
-
-        String buildDir = ProjectPrefenceHelper.getBuildDir(getProject());
-
-        String destdir = getProject().getLocationURI().getRawPath() + File.separator + buildDir;
-
-        IFolder destFolder = file.getProject().getFolder(buildDir);
+    private void compileProject(IProject project) throws CoreException {
+        
+        var settings = ProjectPrefenceHelper.getStore(project);
+        String buildDir = ProjectPrefenceHelper.getBuildDir(settings);
+        IFolder destFolder = project.getFolder(buildDir);
 
         if (!destFolder.exists()){
             destFolder.create(IResource.NONE, true, null);
             destFolder.setDerived(true,null);
         }
-        String filedir = file.getParent().getLocation().toFile().getAbsolutePath();
-        String dest = destdir + File.separator + file.getName();
-        String destName = file.getName().substring(0,file.getName().lastIndexOf('.')+1)+"prg";
-        dest = dest.substring(0,dest.lastIndexOf(File.separatorChar)+1) + destName;
 
-        String cmdLine[] = createCommandLine(file,dest);
+        String cmdLine[] = createCommandLine(project);
         if (cmdLine == null){
             throw new CoreException(new Status(Status.ERROR, Constants.PLUGIN_ID, "Could not compile. Please make sure that you have set the path to Kickass.jar in the Preferences"));
         }
 
-        new TmpLauncher().launch(cmdLine, filedir, file.getProject(), monitor);
+        var cwd = makeAbsolute(project, ProjectPrefenceHelper.getCompiler(settings));
+        new TmpLauncher().launch(cwd, cmdLine, project, monitor);
         try {
-
             destFolder.refreshLocal(IResource.DEPTH_INFINITE, null);
-            IResource member = destFolder.findMember(destName);
-            if (member != null){
-                member.setDerived(true,null);
-            }
         } catch (CoreException e) {
         }
-
-        IPreferenceStore store = Activator.getDefault().getPreferenceStore();
-        boolean viceSymbols = store.getBoolean(Constants.PREFERENCES_COMPILER_VICESYMBOLS);
-        if (viceSymbols){
-            moveViceSymbolFile(file, destFolder);
-        }
-
     }
 
-    private static String[] createCommandLine(IFile file, String dest) {
+    private static String[] createCommandLine(IProject project) {
+        IPreferenceStore preferences = Activator.getDefault().getPreferenceStore();
+        IPreferenceStore settings = ProjectPrefenceHelper.getStore(project);
 
-        IPreferenceStore store = Activator.getDefault().getPreferenceStore();
-
-        String compiler = ProjectPrefenceHelper.getCompiler(file.getProject());
+        String compiler = ProjectPrefenceHelper.getCompiler(settings);
         if (compiler == null || (compiler.trim().isEmpty()))
-            compiler = store.getString(Constants.PREFERENCES_COMPILER_NAME);
+            compiler = preferences.getString(Constants.PREFERENCES_COMPILER_NAME);
 
         if ((compiler == null) || (compiler.trim().isEmpty()))
             return null;
@@ -328,154 +179,39 @@ public class TmpBuilder extends IncrementalProjectBuilder {
         File f = new File(compiler);
         if (!f.exists() || !f.canRead())
             return null;
-
-        String params = store.getString(Constants.PREFERENCES_COMPILER_PARAMS);
-        final boolean viceSymbols = store.getBoolean(Constants.PREFERENCES_COMPILER_VICESYMBOLS);
-        final boolean symbols = store.getBoolean(Constants.PREFERENCES_COMPILER_SYMBOLS);
-        final boolean afo = store.getBoolean(Constants.PREFERENCES_COMPILER_AFO);
         
-        final String projectCfgFile = ProjectPrefenceHelper.getStore(file.getProject()).getString(Constants.PROJECT_PREFS_LOCAL_CONF_KEY);
-        final String workspaceCfgFile = store.getString(Constants.PREFERENCES_LOCAL_CONFIG);
-
-        List<String> libdirsArray = new ArrayList<String>();
-        libdirsArray.addAll(ProjectPrefenceHelper.getAbsoluteLibDirs(file.getProject()));
-        libdirsArray.addAll(Activator.getGlobalLibdirs());
-
-
-        if (params == null) {
-            params = "";
+        String buildDir = ProjectPrefenceHelper.getBuildDir(settings);
+        if (buildDir == null || buildDir.trim().isEmpty()) {
+            return null;
         }
-
-        List<String> cmdArray = new ArrayList<String>();
-        cmdArray.add(file.getName());
-        if (symbols){
-            cmdArray.add("-symbolfile");
+        
+        var input = ProjectPrefenceHelper.getInput(settings);
+        if (input == null || input.trim().isEmpty()) {
+            return null;
         }
-        if (viceSymbols){
-            cmdArray.add("-vicesymbols");
+        
+        var output = ProjectPrefenceHelper.getOutput(settings);
+        if (output == null || output.trim().isEmpty()) {
+            return null;
         }
-        if (afo){
-            cmdArray.add("-afo");
-        }
-        if(workspaceCfgFile != null && !workspaceCfgFile.trim().isEmpty()){
-            cmdArray.add("-cfgfile");
-            cmdArray.add(workspaceCfgFile.trim());
-        }
-        if(projectCfgFile != null && !projectCfgFile.trim().isEmpty()){
-            cmdArray.add("-cfgfile");
-            cmdArray.add(projectCfgFile.trim());
-        }
-
-        if (!libdirsArray.isEmpty()){
-            for (String dir : libdirsArray){
-                dir = dir.trim();
-                if (new File(dir).exists()){
-                    cmdArray.add("-libdir");
-                    cmdArray.add(dir);
-                } else {
-                    Activator.getDefault().getLog().log(
-                            new Status(Status.ERROR, Constants.PLUGIN_ID, "CommandLineArgument is invalid, libdir does not exist [" + dir +"]"));
-
-                }
-            }
-        }
-
+        
+        // $tmpx -i $source -l $target/$program.lst -o $target/$program.prg
+        var cmdArray = new ArrayList<String>();
+        cmdArray.add(compiler);
+        
+        cmdArray.add("-i");
+        cmdArray.add(makeAbsolute(project, input));
+        
+        // TODO add list file
+        // cmdArray.add("-l");
+        // cmdArray.add(makeAbsolute(project, listFile));
+        
         cmdArray.add("-o");
-        cmdArray.add(dest);
-
-        for (String p :params.split("\n")){
-            if (p.matches("\\s*\\w+\\s*=\\s*\\w+\\s*")){
-                cmdArray.add(":" +p.trim());
-            } else if (!"".equals(p.trim())){
-                Activator.getDefault().getLog().log(
-                        new Status(Status.ERROR, Constants.PLUGIN_ID, "CommandLineArgument is invalid: [" + p +"]"));
-
-            }
-        }
-        return cmdArray.toArray(new String[]{});
+        var target = makeAbsolute(project, buildDir) + File.separator + output;       
+        cmdArray.add(makeAbsolute(project, target));
+        return cmdArray.toArray(new String[0]);
     }
 
-
-    private void moveViceSymbolFile(IFile file, IFolder dest) {
-        try {
-            file.getParent().refreshLocal(IResource.DEPTH_INFINITE, null);
-
-            IFile src = (IFile) file.getParent().findMember(file.getName().replace(file.getFileExtension(), "vs"));
-
-            if (src != null && src.exists()){
-                src.setDerived(true,null);
-                IFile oldFile = dest.getFile(src.getName());
-                if (oldFile != null && oldFile.exists()){
-                    oldFile.delete(true, null);
-                }
-                src.move(oldFile.getFullPath(), true, null);
-            }
-        } catch (CoreException e) {
-            Activator.getDefault().getLog().log(
-                    new Status(Status.ERROR, Constants.PLUGIN_ID, Status.OK,
-                            Messages.LAUNCH_ERROR, e));
-        }
-    }
-
-
-    /**
-     * Class for visiting all resources when a full build is initiated.
-     * 
-     * @author andre
-     * @since 25.11.2005
-     */
-    private class MyFullBuildVisitor implements IResourceVisitor {
-
-        private IProgressMonitor monitor;
-
-        public MyFullBuildVisitor(IProgressMonitor monitor) {
-            this.monitor = monitor;
-        }
-
-        /**
-         * {@inheritDoc}
-         */
-        public boolean visit(IResource resource) throws CoreException {
-            int resourceType = resource.getType();
-
-            if (monitor != null && monitor.isCanceled())
-                return false;
-
-            if (resourceType == IResource.PROJECT) {
-                return resource.getProject().hasNature(Constants.NATURE_ID);
-            } else if (resourceType == IResource.FOLDER) {
-                return ((IFolder)resource).findMember(".no_kickass_scan") == null &&
-                        matchingSourceFolder(resource.getProjectRelativePath());
-            } else if (resourceType == IResource.FILE) {
-
-                IFile file = (IFile) resource;
-                boolean kickassScan = true;
-                IResource res = file.getParent();
-                while (kickassScan && res != null && res.getType() == IResource.FOLDER){
-                    kickassScan &= ((IFolder)res).findMember(".no_kickass_scan") == null;
-                    res = res.getParent();
-                }
-
-                String extension = resource.getFileExtension();
-                if (kickassScan && extension != null && Patterns.EXTENSION_PATTERN_MAINFILES.matcher(extension).matches()){
-                    compileFile(file);
-                }
-            }
-
-            return false;
-        }
-
-
-    }
-
-    private boolean matchingSourceFolder(IPath projectRelativePath) {
-        for (IPath path: getSrcFolders()){
-            if (projectRelativePath.matchingFirstSegments(path) == path.segmentCount()){
-                return true;
-            }
-        }
-        return false;
-    }
 
     /**
      * Class for visiting all resources when a incremental build is initiated.
@@ -485,12 +221,8 @@ public class TmpBuilder extends IncrementalProjectBuilder {
      */
     private class MyIncrementalBuildVisitor implements IResourceDeltaVisitor {
 
-        private IProgressMonitor monitor;
-
-        public MyIncrementalBuildVisitor(IProgressMonitor monitor){
-            this.monitor = monitor;
-        }
-
+        boolean hasChanged;
+        
         public boolean visit(IResourceDelta delta) throws CoreException {
             int deltaKind = delta.getKind();
 
@@ -499,33 +231,12 @@ public class TmpBuilder extends IncrementalProjectBuilder {
                 int resourceType = resource.getType();
 
                 if (resourceType == IResource.FILE) {
-
-                    boolean kickassScan = true;
-                    IResource res = resource.getParent();
-                    while (kickassScan && res != null && res.getType() == IResource.FOLDER){
-                        kickassScan &= ((IFolder)res).findMember(".no_kickass_scan") == null;
-                        res = res.getParent();
-                    }
-
-                    String extension = resource.getFileExtension();
-                    if (kickassScan && (extension != null) && Patterns.EXTENSION_PATTERN_MAINFILES.matcher(extension).matches()) {
-                        if (!monitor.isCanceled())
-                            compileFile((IFile) resource);
-                    } else if (kickassScan && extension != null && Patterns.EXTENSION_PATTERN_INCLUDES.matcher(extension).matches()){
-
-                        Map<String,IFile>srcs = new HashMap<String, IFile>();
-                        getAllIncluders((IFile)resource, new HashSet<String>(),srcs);
-
-                        for (IFile file: srcs.values()){
-                            if (!monitor.isCanceled())
-                                compileFile(file);
-                        }
-                    }
+                    hasChanged = true;
+                   return false;
                 } else if (resourceType == IResource.PROJECT) {
                     return resource.getProject().hasNature(Constants.NATURE_ID);
                 } else if (resourceType == IResource.FOLDER) {
-                    return ((IFolder)resource).findMember(".no_kickass_scan") == null &&
-                            matchingSourceFolder(resource.getProjectRelativePath());
+                    return true;
                 } 
             }
 

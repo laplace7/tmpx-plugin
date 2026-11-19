@@ -52,7 +52,7 @@ import at.laplace.tmpxplugin.prefs.ProjectPrefenceHelper;
 
 
 /**
- * LaunchShortcut for exexutable files.
+ * LaunchShortcut for executable files.
  * 
  * @author Andy Reek
  * @since 13.02.2006
@@ -115,7 +115,8 @@ public class ASMLaunchShortcut implements ILaunchShortcut {
 		}
 
 
-		String buildDir = ProjectPrefenceHelper.getBuildDir(file.getProject());
+		var settings = ProjectPrefenceHelper.getStore(file.getProject());
+		String buildDir = ProjectPrefenceHelper.getBuildDir(settings);
 		String destdir = file.getProject().getLocationURI().getRawPath() + File.separator + buildDir;
 
 		IFolder destFolder = file.getProject().getFolder(buildDir);
