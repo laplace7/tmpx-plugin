@@ -53,10 +53,10 @@
    </extension>
    <extension
          id="builder"
-         name="Kick Assembler Builder"
+         name="TMPx Assembler Builder"
          point="org.eclipse.core.resources.builders">
       <builder
-            hasNature="false"
+            hasNature="true"
             isConfigurable="false">
          <run class="at.laplace.tmpxplugin.TmpBuilder"/>
       </builder>
@@ -276,7 +276,7 @@
             id="at.laplace.tmpxplugin.asm.contenttypeMod"
             file-extensions="asm,inc,sym,s"
             base-type="org.eclipse.core.runtime.text"
-            name="KickAssembler File"
+            name="Assembler File"
             priority="high">
       </content-type>
    </extension>

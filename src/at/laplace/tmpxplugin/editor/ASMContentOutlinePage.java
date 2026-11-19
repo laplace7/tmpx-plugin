@@ -23,8 +23,9 @@ package at.laplace.tmpxplugin.editor;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
-import java.util.regex.Matcher;
+import java.util.Set;
 import java.util.regex.Pattern;
 
 import org.eclipse.core.runtime.Status;
@@ -233,11 +234,11 @@ public class ASMContentOutlinePage extends ContentOutlinePage {
 
 		private TreeObject consts = new TreeObject(Messages.TREEOBJECT_CONST_NAME, Constants.TREEOBJECT_TYPE_ROOT_CONST);
 
-		private TreeObject labelsAndSegments = new TreeObject(Messages.TREEOBJECT_LABEL_NAME, Constants.TREEOBJECT_TYPE_ROOT_LABEL);
+		private TreeObject labels = new TreeObject(Messages.TREEOBJECT_LABEL_NAME, Constants.TREEOBJECT_TYPE_ROOT_LABEL);
 
 		public List<String> getLabels(){
 
-			List<String> list = removeEqualSigns(getChildren(labelsAndSegments, Constants.TREEOBJECT_TYPE_LABEL));
+			List<String> list = removeEqualSigns(getChildren(labels, Constants.TREEOBJECT_TYPE_LABEL));
 			Collections.sort(list);
 
 			return list;
@@ -348,8 +349,8 @@ public class ASMContentOutlinePage extends ContentOutlinePage {
 			if (inputElement == input) {
 				ArrayList<TreeObject> objects = new ArrayList<TreeObject>();
 
-				if (labelsAndSegments.getChildren().length > 0) {
-					objects.add(labelsAndSegments);
+				if (labels.getChildren().length > 0) {
+					objects.add(labels);
 				}
 
 				if (functions.getChildren().length > 0) {
@@ -391,6 +392,19 @@ public class ASMContentOutlinePage extends ContentOutlinePage {
 			}
 		}
 
+        private static TreeObject findChild(TreeObject tree, Object object) {
+            Object[] o = tree.getChildren();
+
+            for (int i = 0; i < o.length; i++) {
+                if (o[i] instanceof TreeObject to) {
+                    if (to.equals(object)) {
+                        return to;
+                    }
+                }
+            }
+            return null;
+        }
+		
 		/**
 		 * Finds an existing TreeObject in the tree model.
 		 * 
@@ -411,66 +425,93 @@ public class ASMContentOutlinePage extends ContentOutlinePage {
 				return macros;
 			}
 
-			if (labelsAndSegments.equals(treeobj)) {
-				return labelsAndSegments;
+			if (labels.equals(treeobj)) {
+				return labels;
 			}
 			
-			if (consts.equals(treeobj)){
+			if (consts.equals(treeobj)) {
 				return consts;
 			}
 
-			int i = 0;
-			TreeObject to = null;
-			Object[] o = functions.getChildren();
-
-			for (i = 0; i < o.length; i++) {
-				if (o[i] instanceof TreeObject) {
-					to = (TreeObject) o[i];
-
-					if (to.equals(treeobj)) {
-						return to;
-					}
-				}
-			}
-
-			o = macros.getChildren();
-
-			for (i = 0; i < o.length; i++) {
-				if (o[i] instanceof TreeObject) {
-					to = (TreeObject) o[i];
-
-					if (to.equals(treeobj)) {
-						return to;
-					}
-				}
-			}
-
-			o = labelsAndSegments.getChildren();
-
-			for (i = 0; i < o.length; i++) {
-				if (o[i] instanceof TreeObject) {
-					to = (TreeObject) o[i];
-
-					if (to.equals(treeobj)) {
-						return to;
-					}
-				}
+			var child = findChild(functions, treeobj);
+			if (child != null) {
+			    return child;
 			}
 			
-			o = consts.getChildren();
-			
-			for (i = 0; i < o.length; i++) {
-				if (o[i] instanceof TreeObject) {
-					to = (TreeObject) o[i];
-
-					if (to.equals(treeobj)) {
-						return to;
-					}
-				}
-			}
-			
+            child = findChild(macros, treeobj);
+            if (child != null) {
+                return child;
+            }
+            
+            child = findChild(labels, treeobj);
+            if (child != null) {
+                return child;
+            }
+            
+            child = findChild(consts, treeobj);
+            if (child != null) {
+                return child;
+            }
 
 			return null;
+		}
+		
+		private void parseDefine(Set<String> names, String stringLineLower, String stringLine, int lineOffset) {
+            if (stringLineLower.contains("=") || stringLineLower.contains(".var")) {                            
+                var matcher = Patterns.CONSTVAR_PATTERN.matcher(stringLine);
+                
+                if (matcher.matches()) {
+                    var name = matcher.group(1);
+                    names.add(name);
+                    var value = matcher.group(3);
+                    var child = new TreeObject(name + " = " + value,Constants.TREEOBJECT_TYPE_CONST);
+                    child.setData(new Position(lineOffset, name.length()));
+                    
+                    consts.addChild(child);
+                }
+            }
+		}
+		
+		private void parseBlock(Set<String> names, String previousLine, String stringLineLower, int prevLineOffset) {
+            if (previousLine != null && stringLineLower.contains(".block")) {
+                var matcher = Patterns.FUNCTION_PATTERN.matcher(previousLine);
+
+                if (matcher.find()) {
+                    var name = matcher.group(1);
+                    names.add(name);
+                    var child = new TreeObject(name, Constants.TREEOBJECT_TYPE_PROCEDURE);
+                    child.setData(new Position(prevLineOffset, name.length()));
+
+                    functions.addChild(child);
+                }
+            }
+		}
+		
+		private void parseMacro(Set<String> names, String stringLine, int lineOffset) {
+            if (stringLine.contains(".macro") || stringLine.contains(".segment")) {
+                var matcher = Patterns.MACRO_PATTERN.matcher(stringLine);
+
+                if (matcher.find()) {
+                    var name = matcher.group(1);
+                    names.add(name);
+                    var child = new TreeObject(name, Constants.TREEOBJECT_TYPE_MACRO);
+                    child.setData(new Position(lineOffset, name.length()));
+                    macros.addChild(child);
+                }
+            }
+		}
+		
+		private void parseLabel(Set<String> names, String stringLine, int lineOffset) {
+            var matcher = Patterns.LABEL_PATTERN.matcher(stringLine);
+            if (matcher.matches()) {
+                var name = matcher.group(1);
+                if (names.contains(name)) {
+                    return;
+                }
+                var child = new TreeObject(name, Constants.TREEOBJECT_TYPE_LABEL);
+                child.setData(new Position(lineOffset, name.length()));
+                labels.addChild(child);
+            }
 		}
 
 		/**
@@ -479,26 +520,21 @@ public class ASMContentOutlinePage extends ContentOutlinePage {
 		private void parse() {
 			functions.setChildren(null);
 			macros.setChildren(null);
-			labelsAndSegments.setChildren(null);
+			labels.setChildren(null);
 			consts.setChildren(null);
 			
 			IDocument document = editor.getDocumentProvider().getDocument(editor.getEditorInput());
 
 			if (document != null) {
+			    var names = new HashSet<String>();
 				int lines = document.getNumberOfLines();
-				int lineOffset,  linelen, matchStart, matchEnd, startOffset, length;
+				int prevLineOffset, lineOffset, linelen;
+				String previousLine = "";
 				String stringLine = "";
 				String stringLineLower = "";
-				Pattern pattern = null;
-				Matcher matcher = null;
-				TreeObject child = null;
 
+				prevLineOffset = 0;
 				lineOffset = 0;
-				linelen = 0;
-				matchStart = 0;
-				matchEnd = 0;
-				startOffset = 0;
-				length = 0;
 
 				for (int line = 0; line < lines; line++) {
 					try {
@@ -507,103 +543,22 @@ public class ASMContentOutlinePage extends ContentOutlinePage {
 						stringLine = document.get(lineOffset, linelen);
 
 						stringLineLower = stringLine.toLowerCase();
-
-						if (stringLineLower.contains(".const") || stringLineLower.contains(".var")) {
-							pattern = Patterns.CONSTVAR_PATTERN;
-							matcher = pattern.matcher(stringLine);
-							
-							if (matcher.matches()){
-								child = new TreeObject(matcher.group(2)+matcher.group(3),Constants.TREEOBJECT_TYPE_CONST);
-								child.setData(new Position(lineOffset,1));
-								
-								consts.addChild(child);
-							}
-						}
 						
-						if (stringLineLower.indexOf(".function") > -1) {
-							pattern = Patterns.FUNCTION_PATTERN;
-							matcher = pattern.matcher(stringLine);
-
-							if (matcher.find()) {
-								child = new TreeObject(matcher.group(1), Constants.TREEOBJECT_TYPE_PROCEDURE);
-								child.setData(new Position(lineOffset, 1));
-
-								functions.addChild(child);
-							}
-						}
-
-						if (stringLineLower.indexOf(".macro") > -1) {
-							pattern = Patterns.MACRO_PATTERN;
-							matcher = pattern.matcher(stringLine);
-
-							if (matcher.find()) {
-								child = new TreeObject(matcher.group(1).trim(), Constants.TREEOBJECT_TYPE_MACRO);
-								child.setData(new Position(lineOffset, 1));
-								macros.addChild(child);
-							}
-						}
-
-						if (stringLineLower.indexOf(".pseudocommand") > -1) {
-							pattern = Patterns.PSEUDOCOMMAND_PATTERN;
-							matcher = pattern.matcher(stringLine);
-
-							if (matcher.find()) {
-								child = new TreeObject(matcher.group(1).replaceAll("\\{.*$", "").trim(), Constants.TREEOBJECT_TYPE_MACRO);
-								child.setData(new Position(lineOffset, 1));
-								macros.addChild(child);
-							}
-						}
-
-						child = null;
-						if (stringLineLower.indexOf(".label") > -1) {
-							pattern = Patterns.LABEL_PATTERN;
-							matcher = pattern.matcher(stringLine);
-
-							if (matcher.find()) {
-								child = new TreeObject(matcher.group(1).trim(), Constants.TREEOBJECT_TYPE_LABEL);
-								child.setData(new Position(lineOffset, 1));
-							}
-						}
-
-						if (stringLineLower.indexOf(":") > -1) {
-							pattern = Patterns.LABEL_PATTERN_ALT;
-							matcher = pattern.matcher(stringLine);
-
-							if (matcher.find()) {
-								matchStart = matcher.start(1);
-								matchEnd = matcher.end(1);
-								startOffset = lineOffset + matchStart;
-								length = lineOffset + matchEnd - startOffset;
-
-								child = new TreeObject(stringLine.substring(matchStart, matchEnd), Constants.TREEOBJECT_TYPE_LABEL);
-								child.setData(new Position(startOffset, length));
-
-							}
-						}
-
-						if (child != null){
-							TreeObject node = labelsAndSegments;
-							int sz = labelsAndSegments.getChildren().length;
-							if (sz > 0 && ((TreeObject)labelsAndSegments.getChild(sz-1)).getType() == Constants.TREEOBJECT_TYPE_SEGMENT){
-								node = ((TreeObject) labelsAndSegments.getChild(sz-1));
-							}
-							node.addChild(child);
-
-						}
-
-						if (stringLineLower.indexOf(".pc") > -1 || stringLineLower.indexOf(".pseudopc")  > -1) {
-							child = new TreeObject(stringLineLower.replace("{","").trim(), Constants.TREEOBJECT_TYPE_SEGMENT);
-							child.setData(new Position(lineOffset, 1));
-							labelsAndSegments.addChild(child);
-						}
-
+                        parseDefine(names, stringLineLower, stringLine, lineOffset);
+						parseBlock(names, previousLine, stringLineLower, prevLineOffset);
+						parseMacro(names, stringLine, lineOffset);
+						parseLabel(names, previousLine, prevLineOffset);						
 					}
 					catch (BadLocationException e) {
 						Activator.getDefault().getLog().log(
 								new Status(Status.ERROR, Constants.PLUGIN_ID, Status.OK,
 										Messages.BADLOCATION_ERROR, e));
+					} finally {
+                        previousLine = stringLine;
+                        prevLineOffset = lineOffset;					    
 					}
 				}
+				parseLabel(names, previousLine, prevLineOffset);
 			}
 		}
 	}

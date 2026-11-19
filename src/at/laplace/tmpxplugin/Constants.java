@@ -150,7 +150,7 @@ public class Constants {
 	/**
 	 * Name for the multi line comment partition.
 	 */
-	public static final String PARTITION_COMMENT_MULTI = "partion.multi";
+	// TODO remove public static final String PARTITION_COMMENT_MULTI = "partion.multi";
 
 	// PropertyChangeEvent names.
 

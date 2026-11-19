@@ -110,8 +110,7 @@ public class ASMLabelProvider extends LabelProvider {
    * {@inheritDoc}
    */
   public String getText(Object element) {
-    if (element instanceof TreeObject) {
-      TreeObject elem = (TreeObject) element;
+    if (element instanceof TreeObject elem) {
       return elem.toString();
     }
 
@@ -122,8 +121,7 @@ public class ASMLabelProvider extends LabelProvider {
    * {@inheritDoc}
    */
   public Image getImage(Object element) {
-    if (element instanceof TreeObject) {
-      TreeObject elem = (TreeObject) element;
+    if (element instanceof TreeObject elem) {
       int type = elem.getType();
 
       switch (type) {

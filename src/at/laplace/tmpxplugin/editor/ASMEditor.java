@@ -113,8 +113,7 @@ public class ASMEditor extends TextEditor {
     IDocument document = getDocumentProvider().getDocument(getEditorInput());
     FastPartitioner partitioner = new FastPartitioner(new ASMPartitionScanner(),
                                                       new String[] { Constants.PARTITION_STRING,
-                                                                    Constants.PARTITION_COMMENT_SINGLE,
-                                                                    Constants.PARTITION_COMMENT_MULTI });
+                                                                    Constants.PARTITION_COMMENT_SINGLE });
     partitioner.connect(document);
     document.setDocumentPartitioner(partitioner);
   }

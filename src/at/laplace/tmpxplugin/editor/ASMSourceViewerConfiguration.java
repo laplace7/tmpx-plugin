@@ -58,7 +58,7 @@ public class ASMSourceViewerConfiguration extends SourceViewerConfiguration {
   /**
    * Rule scanner for comment, multi-comment and string parts.
    */
-  private PropertyChangeRuleBaseScanner[] scanner = new PropertyChangeRuleBaseScanner[3];
+  private PropertyChangeRuleBaseScanner[] scanner = new PropertyChangeRuleBaseScanner[2];
 
   /**
    * The constructor.
@@ -97,16 +97,11 @@ public class ASMSourceViewerConfiguration extends SourceViewerConfiguration {
 
     scanner[0] = new PropertyChangeRuleBaseScanner(editor, Constants.PREFERENCES_TEXTCOLOR_COMMENT);
     dr = new DefaultDamagerRepairer(scanner[0]);
-    reconciler.setDamager(dr, Constants.PARTITION_COMMENT_MULTI);
-    reconciler.setRepairer(dr, Constants.PARTITION_COMMENT_MULTI);
-
-    scanner[1] = new PropertyChangeRuleBaseScanner(editor, Constants.PREFERENCES_TEXTCOLOR_COMMENT);
-    dr = new DefaultDamagerRepairer(scanner[1]);
     reconciler.setDamager(dr, Constants.PARTITION_COMMENT_SINGLE);
     reconciler.setRepairer(dr, Constants.PARTITION_COMMENT_SINGLE);
 
-    scanner[2] = new PropertyChangeRuleBaseScanner(editor, Constants.PREFERENCES_TEXTCOLOR_STRING);
-    dr = new DefaultDamagerRepairer(scanner[2]);
+    scanner[1] = new PropertyChangeRuleBaseScanner(editor, Constants.PREFERENCES_TEXTCOLOR_STRING);
+    dr = new DefaultDamagerRepairer(scanner[1]);
     reconciler.setDamager(dr, Constants.PARTITION_STRING);
     reconciler.setRepairer(dr, Constants.PARTITION_STRING);
 

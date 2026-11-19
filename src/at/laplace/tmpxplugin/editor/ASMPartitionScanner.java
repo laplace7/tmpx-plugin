@@ -27,7 +27,6 @@ import org.eclipse.jface.text.rules.EndOfLineRule;
 import org.eclipse.jface.text.rules.IPredicateRule;
 import org.eclipse.jface.text.rules.IRule;
 import org.eclipse.jface.text.rules.IToken;
-import org.eclipse.jface.text.rules.MultiLineRule;
 import org.eclipse.jface.text.rules.RuleBasedPartitionScanner;
 import org.eclipse.jface.text.rules.SingleLineRule;
 import org.eclipse.jface.text.rules.Token;
@@ -48,13 +47,11 @@ public class ASMPartitionScanner extends RuleBasedPartitionScanner {
    */
   public ASMPartitionScanner() {
     IToken string = new Token(Constants.PARTITION_STRING);
-    IToken commentM = new Token(Constants.PARTITION_COMMENT_MULTI);
     IToken commentS = new Token(Constants.PARTITION_COMMENT_SINGLE);
 
     ArrayList<IRule> rules = new ArrayList<IRule>();
     rules.add(new SingleLineRule("\"", "\"", string));
-    rules.add(new MultiLineRule("/*", "*/", commentM));
-    rules.add(new EndOfLineRule("//", commentS));
+    rules.add(new EndOfLineRule(";", commentS));
     setPredicateRules(rules.toArray(new IPredicateRule[] {}));
   }
 
