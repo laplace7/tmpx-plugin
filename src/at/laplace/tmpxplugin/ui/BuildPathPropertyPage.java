@@ -61,7 +61,7 @@ public class BuildPathPropertyPage extends PropertyPage {
         var compiler = new FileFieldEditor(Constants.PROJECT_PREFS_COMPILER_KEY, Messages.COMPILER_NAME,
                                                        true, comp);
         compiler.setEmptyStringAllowed(true);
-        compiler.setFileExtensions(new String[]{"", "*.exe"});
+        compiler.setFileExtensions(new String[]{"*", "*.exe"});
         compiler.setFilterPath(new File(projectPath));
         compiler.setPreferenceStore(store);
         compiler.load();

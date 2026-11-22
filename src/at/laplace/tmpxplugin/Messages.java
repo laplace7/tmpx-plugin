@@ -36,12 +36,14 @@ public class Messages extends NLS {
 	 */
 	private static final String BUNDLE_NAME = "at.laplace.tmpxplugin.messages";
 
-
-   public static String TEXTCOLOR_FUNCTION_NAME;
-	
-	public static String TEXTCOLOR_CLASS_NAME;
-
+    public static String TEXTCOLOR_DEFAULT_NAME;
+    public static String TEXTCOLOR_DIRECTIVE_NAME;
+    public static String TEXTCOLOR_DIRECTIVE_BLOCK_NAME;
+    public static String TEXTCOLOR_DIRECTIVE_BRANCH_NAME;
+    public static String TEXTCOLOR_OPERATOR_NAME;
+    public static String TEXTCOLOR_INSTRUCTION_BRANCH_NAME;
 	public static String TEXTCOLOR_CONSTANT_NAME;
+    public static String TEXTCOLOR_MACRO_NAME;
 
 	/**
 	 * Name of the string text style.
@@ -57,11 +59,6 @@ public class Messages extends NLS {
 	 * Name of the instruction text style.
 	 */
 	public static String TEXTCOLOR_INSTRUCTION_NAME;
-
-	/**
-	 * Name of the segment text style.
-	 */
-	public static String TEXTCOLOR_SEGMENT_NAME;
 
 	/**
 	 * Syntax Highlight Title Text.

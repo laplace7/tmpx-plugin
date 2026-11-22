@@ -60,9 +60,9 @@ public final class TextAttributeConverter {
     int r, g, b;
 
     try {
-      r = new Integer(data[0]).intValue();
-      g = new Integer(data[1]).intValue();
-      b = new Integer(data[2]).intValue();
+      r = Integer.decode(data[0]);
+      g = Integer.decode(data[1]);
+      b = Integer.decode(data[2]);
     } catch (Exception e) {
       r = 0;
       g = 0;

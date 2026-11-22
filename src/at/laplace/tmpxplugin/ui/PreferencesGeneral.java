@@ -70,25 +70,29 @@ public class PreferencesGeneral extends PreferencePage implements IWorkbenchPref
 	/**
 	 * The keys of the overlay store.
 	 */
-	private final String[][] fSyntaxColorListModel = new String[][] {
-			{ Messages.TEXTCOLOR_STRING_NAME,
-				Constants.PREFERENCES_TEXTCOLOR_STRING },
-				{ Messages.TEXTCOLOR_COMMENT_NAME,
-					Constants.PREFERENCES_TEXTCOLOR_COMMENT },
-					{ Messages.TEXTCOLOR_INSTRUCTION_NAME,
-						Constants.PREFERENCES_TEXTCOLOR_INSTRUCTION },
-						{ Messages.TEXTCOLOR_SEGMENT_NAME,
-							Constants.PREFERENCES_TEXTCOLOR_SEGMENT },
-							{ Messages.TEXTCOLOR_FUNCTION_NAME,
-								Constants.PREFERENCES_TEXTCOLOR_FUNCTION }
-							,
-							{ Messages.TEXTCOLOR_CONSTANT_NAME,
-								Constants.PREFERENCES_TEXTCOLOR_CONSTANT }
-							,
-							{ Messages.TEXTCOLOR_CLASS_NAME,
-								Constants.PREFERENCES_TEXTCOLOR_CLASS }
-
-	};
+    private final String[][] fSyntaxColorListModel = new String[][] {
+            { Messages.TEXTCOLOR_DEFAULT_NAME,
+                    Constants.PREFERENCES_TEXTCOLOR_DEFAULT },
+            { Messages.TEXTCOLOR_OPERATOR_NAME,
+                    Constants.PREFERENCES_TEXTCOLOR_OPERATOR },
+            { Messages.TEXTCOLOR_INSTRUCTION_NAME,
+                    Constants.PREFERENCES_TEXTCOLOR_INSTRUCTION },
+            { Messages.TEXTCOLOR_INSTRUCTION_BRANCH_NAME,
+                    Constants.PREFERENCES_TEXTCOLOR_INSTRUCTION_BRANCH },
+            { Messages.TEXTCOLOR_MACRO_NAME,
+                        Constants.PREFERENCES_TEXTCOLOR_MACRO },
+            { Messages.TEXTCOLOR_DIRECTIVE_NAME,
+                    Constants.PREFERENCES_TEXTCOLOR_DIRECTIVE },
+            { Messages.TEXTCOLOR_DIRECTIVE_BLOCK_NAME,
+                    Constants.PREFERENCES_TEXTCOLOR_DIRECTIVE_BLOCK },
+            { Messages.TEXTCOLOR_DIRECTIVE_BRANCH_NAME,
+                        Constants.PREFERENCES_TEXTCOLOR_DIRECTIVE_BRANCH },
+            { Messages.TEXTCOLOR_COMMENT_NAME,
+                    Constants.PREFERENCES_TEXTCOLOR_COMMENT },
+            { Messages.TEXTCOLOR_CONSTANT_NAME,
+                    Constants.PREFERENCES_TEXTCOLOR_CONSTANT },
+            { Messages.TEXTCOLOR_STRING_NAME,
+                    Constants.PREFERENCES_TEXTCOLOR_STRING }, };
 
 	private ColorSelector fSyntaxForegroundColorEditor;
 
@@ -183,9 +187,8 @@ public class PreferencesGeneral extends PreferencePage implements IWorkbenchPref
 				| SWT.FULL_SELECTION);
 		fHighlightingColorListViewer.setLabelProvider(new ColorListLabelProvider());
 		fHighlightingColorListViewer.setContentProvider(new ColorListContentProvider());
-		fHighlightingColorListViewer.setSorter(new WorkbenchViewerSorter());
 		gd = new GridData(SWT.BEGINNING, SWT.FILL, false, true);
-		gd.heightHint = convertHeightInCharsToPixels(5);
+		gd.heightHint = convertHeightInCharsToPixels(15);
 		fHighlightingColorListViewer.getControl().setLayoutData(gd);
 
 		Composite stylesComposite = new Composite(editorComposite, SWT.NONE);
@@ -296,12 +299,14 @@ public class PreferencesGeneral extends PreferencePage implements IWorkbenchPref
 		boolean italic = false;
 
 		for (int i = 0, n = fSyntaxColorListModel.length; i < n; i++) {
-			data = Activator.getDefault().getPreferenceStore().getString(fSyntaxColorListModel[i][1]);
+		    var message = fSyntaxColorListModel[i][0];
+		    var preferencesKey = fSyntaxColorListModel[i][1];
+			data = Activator.getDefault().getPreferenceStore().getString(preferencesKey);
 			color = TextAttributeConverter.preferenceDataToColorAttribute(data);
 			bold = TextAttributeConverter.preferenceDataToBoldAttribute(data);
 			italic = TextAttributeConverter.preferenceDataToItalicAttribute(data);
-			fHighlightingColorList.add(new HighlightingColorListItem(fSyntaxColorListModel[i][0],
-					fSyntaxColorListModel[i][1], color, bold, italic));
+			fHighlightingColorList.add(new HighlightingColorListItem(message,
+					preferencesKey, color, bold, italic));
 		}
 
 		fHighlightingColorListViewer.setInput(fHighlightingColorList);

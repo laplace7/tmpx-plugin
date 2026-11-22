@@ -61,32 +61,18 @@ public class Constants {
 	 */
 	public static final String PROPERTY_TEMPLATES = "templates"; //$NON-NLS-1$
 
-	/**
-	 * Preference key for string text style preference keys.
-	 */
-	public static final String PREFERENCES_TEXTCOLOR_STRING = "preferences.textcolor.string"; //$NON-NLS-1$
-
-	/**
-	 * Preference key for comment text style preference keys.
-	 */
-	public static final String PREFERENCES_TEXTCOLOR_COMMENT = "preferences.textcolor.comment"; //$NON-NLS-1$
-
-	/**
-	 * Preference key for instruction text style preference keys.
-	 */
+	// Text style preference keys.
+	public static final String PREFERENCES_TEXTCOLOR_DEFAULT = "preferences.textcolor.default"; //$NON-NLS-1$
 	public static final String PREFERENCES_TEXTCOLOR_INSTRUCTION = "preferences.textcolor.instruction"; //$NON-NLS-1$
-
-	public static final String PREFERENCES_TEXTCOLOR_FUNCTION = "preferences.textcolor.function"; //$NON-NLS-1$
-
-	public static final String PREFERENCES_TEXTCOLOR_CLASS = "preferences.textcolor.class";
-
+    public static final String PREFERENCES_TEXTCOLOR_INSTRUCTION_BRANCH = "preferences.textcolor.instruction.branch"; //$NON-NLS-1$
+	public static final String PREFERENCES_TEXTCOLOR_DIRECTIVE = "preferences.textcolor.directive"; //$NON-NLS-1$
+    public static final String PREFERENCES_TEXTCOLOR_DIRECTIVE_BRANCH = "preferences.textcolor.directive.branch"; //$NON-NLS-1$
+    public static final String PREFERENCES_TEXTCOLOR_DIRECTIVE_BLOCK = "preferences.textcolor.directive.block"; //$NON-NLS-1$
 	public static final String PREFERENCES_TEXTCOLOR_CONSTANT = "preferences.textcolor.constant";
-
-
-	/**
-	 * Preference key for segment text style preference keys.
-	 */
-	public static final String PREFERENCES_TEXTCOLOR_SEGMENT = "preferences.textcolor.segment"; //$NON-NLS-1$
+	public static final String PREFERENCES_TEXTCOLOR_STRING = "preferences.textcolor.string"; //$NON-NLS-1$
+    public static final String PREFERENCES_TEXTCOLOR_MACRO = "preferences.textcolor.macro"; //$NON-NLS-1$
+	public static final String PREFERENCES_TEXTCOLOR_OPERATOR = "preferences.textcolor.operator"; //$NON-NLS-1$
+    public static final String PREFERENCES_TEXTCOLOR_COMMENT = "preferences.textcolor.comment"; //$NON-NLS-1$
 
 	/**
 	 * Compiler name Property.

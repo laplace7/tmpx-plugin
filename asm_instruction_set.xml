@@ -35,18 +35,18 @@
 <instruction command="asl" description="ASL (Arithmetic Shift Left) - Affects Flags: S Z C" />
 <instruction command="asl.z" description="ASL (Arithmetic Shift Left) - Affects Flags: S Z C" />
 <instruction command="asl.zp" description="ASL (Arithmetic Shift Left) - Affects Flags: S Z C" />
-<instruction command="bcc" description="BCC (Branch on Carry Clear) - Affect Flags: none" />
-<instruction command="bcs" description="BCS (Branch on Carry Set) - Affect Flags: none" />
-<instruction command="beq" description="BEQ (Branch on EQual) - Affect Flags: none" />
+<instruction kind="branch" command="bcc" description="BCC (Branch on Carry Clear) - Affect Flags: none" />
+<instruction kind="branch" command="bcs" description="BCS (Branch on Carry Set) - Affect Flags: none" />
+<instruction kind="branch" command="beq" description="BEQ (Branch on EQual) - Affect Flags: none" />
 <instruction command="bit" description="BIT (test BITs) - Affects Flags: N V Z " />
 <instruction command="bit.z" description="BIT (test BITs) - Affects Flags: N V Z " />
 <instruction command="bit.zp" description="BIT (test BITs) - Affects Flags: N V Z " />
-<instruction command="bmi" description="BMI (Branch on MInus) - Affect Flags: none" />
-<instruction command="bne" description="BNE (Branch on Not Equal) - Affect Flags: none" />
-<instruction command="bpl" description="BPL (Branch on PLus) - Affect Flags: none" />
+<instruction kind="branch" command="bmi" description="BMI (Branch on MInus) - Affect Flags: none" />
+<instruction kind="branch" command="bne" description="BNE (Branch on Not Equal) - Affect Flags: none" />
+<instruction kind="branch" command="bpl" description="BPL (Branch on PLus) - Affect Flags: none" />
 <instruction command="brk" description="BRK (BReaK) - Affects Flags: B" />
-<instruction command="bvc" description="BVC (Branch on oVerflow Clear) - Affect Flags: none" />
-<instruction command="bvs" description="BVS (Branch on oVerflow Set) - Affect Flags: none" />
+<instruction kind="branch" command="bvc" description="BVC (Branch on oVerflow Clear) - Affect Flags: none" />
+<instruction kind="branch" command="bvs" description="BVS (Branch on oVerflow Set) - Affect Flags: none" />
 <instruction command="clc" description="CLC (CLear Carry)" />
 <instruction command="cld" description="CLD (CLear Decimal)" />
 <instruction command="cli" description="CLI (CLear Interrupt)" />
@@ -73,8 +73,8 @@
 <instruction command="inc.zp" description="INC (INCrement memory) - Affects Flags: S Z" />
 <instruction command="inx" description="INX (INcrement X) - Affect Flags: S Z" />
 <instruction command="iny" description="INY (INcrement Y) - Affect Flags: S Z" />
-<instruction command="jmp" description="JMP (JuMP) - Affects Flags: none" />
-<instruction command="jsr" description="JSR (Jump to SubRoutine) - Affects Flags: none" />
+<instruction kind="branch" command="jmp" description="JMP (JuMP) - Affects Flags: none" />
+<instruction kind="branch" command="jsr" description="JSR (Jump to SubRoutine) - Affects Flags: none" />
 <instruction command="lda" description="LDA (LoaD Accumulator) - Affects Flags: S Z" />
 <instruction command="lda.z" description="LDA (LoaD Accumulator) - Affects Flags: S Z" />
 <instruction command="lda.zp" description="LDA (LoaD Accumulator) - Affects Flags: S Z" />
@@ -144,74 +144,53 @@
 <instruction command="tas" description="Illegal opcode" />
 <instruction command="xaa" description="Illegal opcode" />
 
-<instruction command="bra" description="DTV opcode" />
+<instruction kind="branch" command="bra" description="DTV opcode" />
 <instruction command="sac" description="DTV opcode" />
 <instruction command="sir" description="DTV opcode" />   
   
-<!-- turbo macro pro assembler instructions -->   
-<segment field=".byte" description="takes a list of byte values which can be decimal, hex, binary or character constants and produces a table of bytes." />
-<segment field=".word" description="takes a list of word values which can be decimal or hex and produces a table of bytes where the words are arranged in low-byte hi-byte order." />
-<segment field=".rta" description="takes a list of word values which can be decimal or hex and produces a table of bytes where the words are decremented by 1 and set in low-byte hi-byte order; this is useful for doing stack manipulation with e.g. return addresses." />
-<segment field=".text" description="takes a quoted string and converts it into a span of bytes. Characters are converted from ASCII to PETSCII, including any bastest token conversion." />
-<segment field=".null" description="as .text, but the span of bytes is terminated with a null (0) byte." />
-<segment field=".shift" description="as .text, but the last byte has its high-bit set to 1." />
-<segment field=".screen" description="as .text, but the characters are converted into screencodes." />
+<directive field=".byte" description="takes a list of byte values which can be decimal, hex, binary or character constants and produces a table of bytes." />
+<directive field=".word" description="takes a list of word values which can be decimal or hex and produces a table of bytes where the words are arranged in low-byte hi-byte order." />
+<directive field=".rta" description="takes a list of word values which can be decimal or hex and produces a table of bytes where the words are decremented by 1 and set in low-byte hi-byte order; this is useful for doing stack manipulation with e.g. return addresses." />
+<directive field=".text" description="takes a quoted string and converts it into a span of bytes. Characters are converted from ASCII to PETSCII, including any bastest token conversion." />
+<directive field=".null" description="as .text, but the span of bytes is terminated with a null (0) byte." />
+<directive field=".shift" description="as .text, but the last byte has its high-bit set to 1." />
+<directive field=".screen" description="as .text, but the characters are converted into screencodes." />
 
-<segment field=".repeat" description="produce 1 or more copies of a sequence of 1 or more values." />
-<segment field=".if" description="tests value or expression for inequality with zero (same as .ifne)," />
-<segment field=".ifne" description="tests value or expression for inequality with zero (same as .if)." />
-<segment field=".ifeq" description="tests value or expression for equality with zero." />
-<segment field=".ifpl" description="tests value or expression for positive (the condition passes if the evaluated expression is from $0 - $7fff and fails if the evaluated expression is from $8000-$ffff)." />
-<segment field=".ifmi" description="tests value or expression for negative (the condition passes if the evaluated expression is from $8000 - $ffff and fails if the evaluated expression is from $0-$7fff)." />
-<segment field=".endif" description="marks the end of the code block that is assembled when the conditional test is met." />
+<directive kind="branch" field=".repeat" description="produce 1 or more copies of a sequence of 1 or more values." />
+<directive kind="branch" field=".if" description="tests value or expression for inequality with zero (same as .ifne)," />
+<directive kind="branch" field=".ifne" description="tests value or expression for inequality with zero (same as .if)." />
+<directive kind="branch" field=".ifeq" description="tests value or expression for equality with zero." />
+<directive kind="branch" field=".ifpl" description="tests value or expression for positive (the condition passes if the evaluated expression is from $0 - $7fff and fails if the evaluated expression is from $8000-$ffff)." />
+<directive kind="branch" field=".ifmi" description="tests value or expression for negative (the condition passes if the evaluated expression is from $8000 - $ffff and fails if the evaluated expression is from $0-$7fff)." />
+<directive kind="branch" field=".endif" description="marks the end of the code block that is assembled when the conditional test is met." />
 
-<segment field=".ifdef" description="tests whether a label has been defined, condition passes if it has." />
-<segment field=".ifndef" description="tests whether a label has been defined, condition passes if it has not." />
+<directive kind="branch" field=".ifdef" description="tests whether a label has been defined, condition passes if it has." />
+<directive kind="branch" field=".ifndef" description="tests whether a label has been defined, condition passes if it has not." />
 
-<segment field=".block" description="starts a code block" />
-<segment field=".bend" description="ends a code block" />
+<directive kind="block" field=".block" description="starts a code block" />
+<directive kind="block" field=".bend" description="ends a code block" />
 
-<segment field=".var" description="defines a variable identified by the label preceeding '.var', which is set to the value of the expression following the '.var'." />
+<directive field=".var" description="defines a variable identified by the label preceeding '.var', which is set to the value of the expression following the '.var'." />
 
-<segment field=".lbl" description="identifies a label that can be referenced by a .goto" />
-<segment field=".goto" description="causes assembler to goto the label referenced and continue assembling from that point on." />
+<directive kind="branch" field=".lbl" description="identifies a label that can be referenced by a .goto" />
+<directive kind="branch" field=".goto" description="causes assembler to goto the label referenced and continue assembling from that point on." />
 
-<segment field=".macro" description="starts a macro definition that will implicitly treat the expanded code block as though it were enclosed by .block/.bend. around the macro" />
-<segment field=".segment" description="starts a macro definition but without any implied block" />
-<segment field=".endm" description="ends a macro definition" />
+<directive kind="block" field=".macro" description="starts a macro definition that will implicitly treat the expanded code block as though it were enclosed by .block/.bend. around the macro" />
+<directive kind="block" field=".segment" description="starts a macro definition but without any implied block" />
+<directive kind="block" field=".endm" description="ends a macro definition" />
 
-<segment field=".include" description="load and assemble the specified file" />
-<segment field=".binary" description="load and output bytes from the specified file, optionally skipping bytes at the start of the file" />
-<segment field=".offs" description="change the location that code is assembled to; code will be assembled forward in memory the the value of the expression following .offs" />
+<directive field=".include" description="load and assemble the specified file" />
+<directive field=".binary" description="load and output bytes from the specified file, optionally skipping bytes at the start of the file" />
+<directive field=".offs" description="change the location that code is assembled to; code will be assembled forward in memory the the value of the expression following .offs" />
 
-<segment field=".pron" description="turn on printing" />
-<segment field=".proff" description="turn off printing" />
-<segment field=".hidemac" description="show unexpanded calls" />
-<segment field=".showmac" description="show expanded calls" />
+<directive field=".pron" description="turn on printing" />
+<directive field=".proff" description="turn off printing" />
+<directive field=".hidemac" description="show unexpanded calls" />
+<directive field=".showmac" description="show expanded calls" />
 
-<segment field=".eor" description="followed by some value, with which all code after the .eor is eor'd with." />
-<segment field=".end" description="terminate assembling" />
-<segment field=".bounce" description="try '.bounce 2,256,0,255,1,0,0,100,100,0,0' for a good time." />
-
-<constant field="BLACK" description="" />
-<constant field="WHITE" description="" />
-<constant field="RED" description="" />
-<constant field="CYAN" description="" />
-<constant field="PURPLE" description="" />
-<constant field="GREEN" description="" />
-<constant field="BLUE" description="" />
-<constant field="YELLOW" description="" />
-<constant field="ORANGE" description="" />
-<constant field="BROWN" description="" />
-<constant field="LIGHT_RED" description="" />
-<constant field="DARK_GRAY" description="" />
-<constant field="DARK_GREY" description="" />
-<constant field="GRAY" description="" />
-<constant field="GREY" description="" />
-<constant field="LIGHT_GREEN" description="" />
-<constant field="LIGHT_BLUE" description="" />
-<constant field="LIGHT_GRAY" description="" />
-<constant field="LIGHT_GREY" description="" />
+<directive field=".eor" description="followed by some value, with which all code after the .eor is eor'd with." />
+<directive field=".end" description="terminate assembling" />
+<directive field=".bounce" description="try '.bounce 2,256,0,255,1,0,0,100,100,0,0' for a good time." />
   
 </sets>
 

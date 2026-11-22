@@ -76,7 +76,7 @@ public class ASMCompletionProcessor implements IContentAssistProcessor {
 		defaultImage = new Image(Display.getCurrent(), Activator.getFilePathFromPlugin("tree_default.gif"));
 		procedureImage = new Image(Display.getCurrent(), Activator.getFilePathFromPlugin("tree_procedure.gif"));
 		kickassKeywords = new ArrayList<String>();
-		for (String key : ASMInstructionSet.getSegments().keySet()){
+		for (String key : ASMInstructionSet.getDirectives().keySet()){
 			kickassKeywords.add(key.substring(1)+" ");
 		}
 		asminstructions = new ArrayList<String>();
@@ -174,17 +174,13 @@ public class ASMCompletionProcessor implements IContentAssistProcessor {
 					smprefix, outline.getConsts() ,null,defaultImage);
 			}
 			
-			addToProposalList(region, proposalList, offset,
-					smprefix, ASMInstructionSet.getConstants().keySet()
-					,null,defaultImage);
-
 			if (outline != null){
 				addToProposalList(region, proposalList, offset,
 					smprefix, outline.getFunctions() ,null,procedureImage);
 			}
 			
 			addToProposalList(region, proposalList, offset,
-					smprefix, ASMInstructionSet.getFunctions().keySet()
+					smprefix, ASMInstructionSet.getBlocks().keySet()
 					,null,defaultImage);
 
 			IFile currentIFile = getCurrentIFile();
