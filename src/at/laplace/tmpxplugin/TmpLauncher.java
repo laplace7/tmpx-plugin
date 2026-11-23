@@ -46,7 +46,7 @@ public class TmpLauncher {
                 String line;
                 while ((line = reader.readLine()) != null) {
                     Activator.getConsole().bringConsoleToFront();
-                    Activator.getConsole().print(line);
+                    Activator.getConsole().println(line);
                                         
                     if (monitor.isCanceled()) {
                         process.destroyForcibly();

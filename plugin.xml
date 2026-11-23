@@ -56,7 +56,7 @@
          name="TMPx Assembler Builder"
          point="org.eclipse.core.resources.builders">
       <builder
-            hasNature="true"
+            hasNature="false"
             isConfigurable="false">
          <run class="at.laplace.tmpxplugin.TmpBuilder"/>
       </builder>

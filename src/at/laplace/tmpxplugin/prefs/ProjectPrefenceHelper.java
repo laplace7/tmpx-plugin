@@ -14,7 +14,7 @@ public class ProjectPrefenceHelper {
 		ProjectScope projectScope = new ProjectScope(project); 
 				
 		ScopedPreferenceStore store = new ScopedPreferenceStore(projectScope, "at.laplace.tmpxplugin");
-        store.setDefault(Constants.PROJECT_PREFS_CWD_KEY, "build");
+        store.setDefault(Constants.PROJECT_PREFS_CWD_KEY, "src");
         store.setDefault(Constants.PROJECT_PREFS_INPUT_KEY, "main.asm");
         store.setDefault(Constants.PROJECT_PREFS_BUILD_DIRECTORY_KEY, "build");
         store.setDefault(Constants.PROJECT_PREFS_OUTPUT_KEY, "program.prg");
