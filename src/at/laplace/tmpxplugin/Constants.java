@@ -62,6 +62,9 @@ public class Constants {
 	public static final String PROPERTY_TEMPLATES = "templates"; //$NON-NLS-1$
 
 	// Text style preference keys.
+	public static final String PREFERENCES_THEME= "preferences.theme"; //$NON-NLS-1$
+
+	
 	public static final String PREFERENCES_TEXTCOLOR_DEFAULT = "preferences.textcolor.default"; //$NON-NLS-1$
 	public static final String PREFERENCES_TEXTCOLOR_INSTRUCTION = "preferences.textcolor.instruction"; //$NON-NLS-1$
     public static final String PREFERENCES_TEXTCOLOR_INSTRUCTION_BRANCH = "preferences.textcolor.instruction.branch"; //$NON-NLS-1$

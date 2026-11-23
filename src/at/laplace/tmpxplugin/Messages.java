@@ -65,6 +65,9 @@ public class Messages extends NLS {
 	 */
 	public static String SYNTAXHIGHLIGHT_TITLE;
 
+	public static String THEMES_TEXT;
+	public static String SELECT_THEME_TEXT;
+	
 	/**
 	 * Foreground-Color-Text.
 	 */
