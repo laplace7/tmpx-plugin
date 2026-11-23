@@ -26,19 +26,23 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.debug.core.DebugPlugin;
 import org.eclipse.debug.core.ILaunch;
 import org.eclipse.debug.core.ILaunchConfiguration;
+import org.eclipse.debug.core.model.IProcess;
 import org.eclipse.debug.core.model.LaunchConfigurationDelegate;
 import org.eclipse.jface.preference.IPreferenceStore;
 
 import at.laplace.tmpxplugin.Activator;
 import at.laplace.tmpxplugin.Constants;
-import at.laplace.tmpxplugin.SimpleExecutor;
 
 
 /**
@@ -53,14 +57,15 @@ public class ASMLauncher extends LaunchConfigurationDelegate {
 	 * {@inheritDoc}
 	 */
 	public void launch(ILaunchConfiguration configuration, String mode, ILaunch launch, IProgressMonitor monitor)
-			throws CoreException {
+			throws CoreException {	    
 		IPreferenceStore store = Activator.getDefault().getPreferenceStore();
 
 		String debugger = store.getString(Constants.PREFERENCES_DEBUGGER_NAME);
 		String params = store.getString(Constants.PREFERENCES_DEBUGGER_PARAMS);
 
-		if (mode.equalsIgnoreCase("debug") && ((debugger == null) || (debugger.trim().length() < 1))) {
-			return;
+		if (mode.equalsIgnoreCase("debug") && (debugger == null || debugger.trim().isEmpty())) {
+		    IStatus status = Status.error("Debugger not set!");
+            throw new CoreException(status);
 		}
 
 		if (params == null) {
@@ -68,101 +73,89 @@ public class ASMLauncher extends LaunchConfigurationDelegate {
 		}
 
 		String launchWorkingDirectory = configuration.getAttribute(Constants.LAUNCH_WORKING_DIRECTORY, "");
-		if (launchWorkingDirectory == null || (launchWorkingDirectory = launchWorkingDirectory.trim()).length() == 0){
-			return;
+		if (launchWorkingDirectory == null || (launchWorkingDirectory = launchWorkingDirectory.trim()).isEmpty()){
+            IStatus status = Status.error("Working directory not set!");
+            throw new CoreException(status);
 		}
 
-		String launchFile = configuration.getAttribute(Constants.LAUNCH_FILE, "");
+		var launchFile = new File(configuration.getAttribute(Constants.LAUNCH_FILE, ""));
 
-		if ((launchFile == null) || ( (launchFile = launchFile.trim()).length() < 1)) {
-			return;
+		if (!launchFile.isAbsolute()) {
+		    launchFile = new File(launchWorkingDirectory, launchFile.getPath());
 		}
-
-		StringBuilder filenameBuilder = new StringBuilder();
-
-		filenameBuilder.append(launchWorkingDirectory);
-		if (launchFile.lastIndexOf(File.separatorChar) > -1){
-			filenameBuilder.append(launchFile.substring(launchFile.lastIndexOf(File.separatorChar)));
-		} else if (launchFile.lastIndexOf('/') > -1) {
-			filenameBuilder.append(launchFile.substring(launchFile.lastIndexOf('/')));
-		} else {
-			filenameBuilder.append(File.separator).append(launchFile);
-		}
-
-		String sep = File.separator;
-		if (sep.charAt(0) != '/') {
-			sep = "\\" + sep; //This is weird
-		}
-
-		String filename = filenameBuilder.toString().replaceAll("/", sep);
-
-		{
-			int i = 0;
-			while (filename.length() > i && filename.charAt(i) == '\\'){
-				i++;
-			}
-			filename = filename.substring(i);
+		
+		if (!launchFile.canRead()) {
+            IStatus status = Status.error("Launch file is not readable: " + launchFile);
+            throw new CoreException(status);
 		}
 		
 		List<String> cmds = new ArrayList<String>();
 		cmds.add(debugger.trim());
 
 		for (String param: params.trim().split("\\n")){
-			if (!"".equals((param=param.trim()))){
+		    param = param.trim();
+			if (!param.isEmpty()){
 				cmds.add(param);
 			}
 		}
 
-		String vs =  filename.replace(".prg", ".vs").replace(".PRG", ".VS");
-		File vsFile = new File(vs);
-		if (vsFile.exists() || mode.equalsIgnoreCase("debug")){
+		File configFile = new File(launchWorkingDirectory, "moncommands.vice");
+        if (writeMonitorCommands(configFile, mode, launchFile)) {
+            cmds.add("-moncommands");
+            cmds.add(configFile.getAbsolutePath());
+        }
 
-			File file = new File(launchWorkingDirectory,"moncommands.vice");
-			if (file.exists()){
-				file.delete();
-			}
-			BufferedWriter writer = null;
-			try {
+		cmds.add(launchFile.getPath());
 
-				writer = new BufferedWriter(new FileWriter(file));
-
-				if (vsFile.exists()){
-					writer.write("ll \"");
-					writer.write(vs);
-					writer.write("\"");
-					writer.newLine();
-				}
-
-				if (mode.equalsIgnoreCase("debug")){
-					writer.write("break .breakpoint");
-					writer.newLine();
-					for (int i = 1; i < 9; i++){
-						writer.write("break .breakpoint"+i);
-						writer.newLine();
-					}
-				}
-				cmds.add("-moncommands");
-				cmds.add(file.getCanonicalPath());
-		        writer.flush();
-			} catch (IOException e) {
-				Activator.getDefault().getLog().log(
-						new Status(Status.INFO, Constants.PLUGIN_ID, "Error" + e.getMessage()));
-
-			} finally {
-				if (writer != null){
-					try {
-						writer.close();
-					} catch (IOException e) {
-					}
-				}
-			}
+		Process process = null;
+		try {
+	        var commandArray = cmds.toArray(new String[0]);
+		    process = Runtime.getRuntime().exec(commandArray, null, new File(launchWorkingDirectory));
+		} catch(IOException e) {
+		    var command = cmds.stream().collect(Collectors.joining(" "));
+            IStatus status = Status.error("Error launching command: " + command);
+            throw new CoreException(status);		    
 		}
-
-		cmds.add(filename);
-
-		SimpleExecutor.exec(cmds.toArray(new String[]{}), launchWorkingDirectory);
-
+		
+        IProcess eclipseProcess = DebugPlugin.newProcess(launch, process, "VICE", new HashMap<>());
+        launch.addProcess(eclipseProcess);
 	}
-
+	
+	private static boolean writeMonitorCommands(File file, String mode, File launchFile) {
+        String vs = launchFile.getPath().replace(".prg", ".vs").replace(".PRG", ".VS");
+        File vsFile = new File(vs);
+        if (vsFile.exists() || mode.equalsIgnoreCase("debug")){
+            if (file.exists()){
+                file.delete();
+            }
+            
+            try (var fileWriter = new FileWriter(file);
+                    var writer = new BufferedWriter(fileWriter)) {
+    
+                if (vsFile.exists()){
+                    writer.write("ll \"");
+                    writer.write(vs);
+                    writer.write("\"");
+                    writer.newLine();
+                }
+    
+                if (mode.equalsIgnoreCase("debug")){
+                    writer.write("break .breakpoint");
+                    writer.newLine();
+                    for (int i = 1; i < 9; i++){
+                        writer.write("break .breakpoint"+i);
+                        writer.newLine();
+                    }
+                }
+                writer.flush();
+                return true;
+            } catch (IOException e) {
+                Activator.getDefault().getLog().log(
+                        new Status(Status.INFO, Constants.PLUGIN_ID, "Error" + e.getMessage()));
+                return false;
+            }
+        }	 
+        return false;
+	}
 
 }

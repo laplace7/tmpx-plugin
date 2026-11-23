@@ -26,8 +26,12 @@ import java.io.File;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.Arrays;
+import java.util.HashMap;
 
 import org.eclipse.core.runtime.Status;
+import org.eclipse.debug.core.DebugPlugin;
+import org.eclipse.debug.core.ILaunch;
+import org.eclipse.debug.core.model.IProcess;
 import org.eclipse.swt.widgets.Display;
 
 public class SimpleExecutor {
@@ -104,24 +108,27 @@ public class SimpleExecutor {
 		}
 
 	}
-	public static void exec(String[] cmdLine, String destdir) {
-		exec(cmdLine, destdir, false);
+	public static void exec(ILaunch launch, String[] cmdLine, String destdir) {
+		exec(launch, cmdLine, destdir, false);
 	}
 
-	public static void exec(String[] cmdLine, String destdir, boolean wait) {
+	public static void exec(ILaunch launch, String[] cmdLine, String destdir, boolean wait) {
 
 		try {
 			Activator.getDefault().getLog().log(
 					new Status(Status.INFO, Constants.PLUGIN_ID, "Executing " + Arrays.toString(cmdLine)));
 
 			Process p  = Runtime.getRuntime().exec(cmdLine, null, new File(destdir));
-
-			Worker worker = new Worker(p);
-			worker.start();
 			
-			if (wait){
-				worker.join();
-			}
+			IProcess eclipseProcess = DebugPlugin.newProcess(launch, p, "VICE x64sc", new HashMap<>());
+			launch.addProcess(eclipseProcess);
+
+//			Worker worker = new Worker(p);
+//			worker.start();
+//			
+//			if (wait){
+//				worker.join();
+//			}
 
 		} catch (Exception e) {
 			Activator.getDefault().getLog().log(
