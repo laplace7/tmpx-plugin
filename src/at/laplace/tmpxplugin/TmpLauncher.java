@@ -26,6 +26,8 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
@@ -35,7 +37,11 @@ public class TmpLauncher {
 
 	public void launch(String cwd, String[] args, IProject project, IProgressMonitor monitor) throws CoreException {
 	    try {
-            ProcessBuilder pb = new ProcessBuilder(args);
+            Activator.getConsole().bringConsoleToFront();
+            Activator.getConsole().println("Command: %s".formatted(Stream.of(args).collect(Collectors.joining(" "))));
+            Activator.getConsole().println("CWD: %s".formatted(cwd));
+
+	        ProcessBuilder pb = new ProcessBuilder(args);
             pb.directory(new File(cwd));
             pb.redirectErrorStream(true);
 

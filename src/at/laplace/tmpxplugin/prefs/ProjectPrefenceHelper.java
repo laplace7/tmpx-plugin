@@ -18,6 +18,7 @@ public class ProjectPrefenceHelper {
         store.setDefault(Constants.PROJECT_PREFS_INPUT_KEY, "main.asm");
         store.setDefault(Constants.PROJECT_PREFS_BUILD_DIRECTORY_KEY, "build");
         store.setDefault(Constants.PROJECT_PREFS_OUTPUT_KEY, "program.prg");
+        store.setDefault(Constants.PROJECT_PREFS_LIST_FILE_KEY, "program.lst");
         store.setDefault(Constants.PROJECT_PREFS_OPTIONS_KEY, "");
 		store.setDefault(Constants.PROJECT_PREFS_SRC_DIRECTORY_KEY, "src");
 		store.setDefault(Constants.PROJECT_PREFS_LIBDIR_DIRECTORY_KEY, "");
@@ -42,6 +43,10 @@ public class ProjectPrefenceHelper {
     
     public static String getOutput(IPreferenceStore store) {
         return store.getString(Constants.PROJECT_PREFS_OUTPUT_KEY);
+    }
+    
+    public static String getListFile(IPreferenceStore store) {
+        return store.getString(Constants.PROJECT_PREFS_LIST_FILE_KEY);
     }
     
     public static String getOptions(IPreferenceStore store) {

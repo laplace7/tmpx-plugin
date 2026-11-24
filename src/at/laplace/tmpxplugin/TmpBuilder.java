@@ -21,10 +21,13 @@
  */ 
 package at.laplace.tmpxplugin;
 
+import java.awt.print.PrinterJob;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
@@ -51,17 +54,17 @@ public class TmpBuilder extends IncrementalProjectBuilder {
     private IProgressMonitor monitor;
     
     public TmpBuilder() {
-        // TODO remove
-        Activator.getConsole().bringConsoleToFront();
-        Activator.getConsole().println("TmpBuilder created");
+        // Leave comments for debugging
+        // Activator.getConsole().bringConsoleToFront();
+        // Activator.getConsole().println("TmpBuilder created");
     }
     
 
     @Override
     protected IProject[] build(int kind, Map<String,String> args, IProgressMonitor monitor) throws CoreException {
-        // TODO remove
-        Activator.getConsole().bringConsoleToFront();
-        Activator.getConsole().println("TmpBuilder build");
+        // Leave comments for debugging
+        // Activator.getConsole().bringConsoleToFront();
+        // Activator.getConsole().println("TmpBuilder build");
 
         this.monitor = monitor;
 
@@ -104,7 +107,13 @@ public class TmpBuilder extends IncrementalProjectBuilder {
      */
     @Override
     protected void clean(IProgressMonitor monitor) throws CoreException {
-        super.clean(monitor);
+        var project = getProject();
+        var settings = ProjectPrefenceHelper.getStore(project);
+        String buildDir = ProjectPrefenceHelper.getBuildDir(settings);
+        IFolder destFolder = project.getFolder(buildDir);
+        var output = ProjectPrefenceHelper.getOutput(settings);
+        var listFile = ProjectPrefenceHelper.getListFile(settings);
+        // TODO implement
     }
     /**
      * Builds only the project delta.
@@ -126,11 +135,28 @@ public class TmpBuilder extends IncrementalProjectBuilder {
         project.refreshLocal(IResource.DEPTH_INFINITE, null);
     }
 
-    private static String makeAbsolute(IProject project, String path) {
-        if (new File(path).isAbsolute()) {
-            return path;
+    private static String makeAbsolute(IProject project, String... parts) {
+        int length = parts.length;
+        if (length == 0) {
+            throw new IllegalArgumentException("Missing parts");
         }
-        return project.getLocationURI().getRawPath() + File.separator + path;
+        
+        var base = project.getLocationURI().getRawPath();
+        var relativeParts = new LinkedList<String>();
+        for (int i = length - 1; i >= 0; i --) {
+            var path = parts[i];
+            if (new File(path).isAbsolute()) {
+                base = path;
+                break;
+            } else {
+                relativeParts.add(0, path);
+            }
+        }
+        
+        if (relativeParts.isEmpty()) {
+            return base;
+        }
+        return base + File.separator + relativeParts.stream().collect(Collectors.joining(File.separator));
     }
     
     /**
@@ -156,7 +182,7 @@ public class TmpBuilder extends IncrementalProjectBuilder {
             throw new CoreException(new Status(Status.ERROR, Constants.PLUGIN_ID, "Could not compile. Please make sure that you have set the path to Kickass.jar in the Preferences"));
         }
 
-        var cwd = makeAbsolute(project, ProjectPrefenceHelper.getCompiler(settings));
+        var cwd = makeAbsolute(project, ProjectPrefenceHelper.getCwd(settings));
         new TmpLauncher().launch(cwd, cmdLine, project, monitor);
         try {
             destFolder.refreshLocal(IResource.DEPTH_INFINITE, null);
@@ -200,15 +226,24 @@ public class TmpBuilder extends IncrementalProjectBuilder {
         cmdArray.add(compiler);
         
         cmdArray.add("-i");
-        cmdArray.add(makeAbsolute(project, input));
-        
-        // TODO add list file
-        // cmdArray.add("-l");
-        // cmdArray.add(makeAbsolute(project, listFile));
-        
+        cmdArray.add(input);
+
+        var listFile = ProjectPrefenceHelper.getListFile(settings);
+        if (!listFile.trim().isEmpty()) {
+            var list = makeAbsolute(project, buildDir, listFile);       
+            cmdArray.add("-l");
+            cmdArray.add(list);            
+        }
+                
         cmdArray.add("-o");
-        var target = makeAbsolute(project, buildDir) + File.separator + output;       
+        var target = makeAbsolute(project, buildDir, output);       
         cmdArray.add(makeAbsolute(project, target));
+        
+        var options = ProjectPrefenceHelper.getOptions(settings).trim();
+        if (!options.isEmpty()) {
+            cmdArray.add(options);
+        }
+        
         return cmdArray.toArray(new String[0]);
     }
 

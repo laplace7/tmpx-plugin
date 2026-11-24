@@ -263,6 +263,7 @@ public class Constants {
     public static final String PROJECT_PREFS_INPUT_KEY = "at.laplace.tmpxplugin.project.input";
     public static final String PROJECT_PREFS_BUILD_DIRECTORY_KEY = "at.laplace.tmpxplugin.project.builddir";
     public static final String PROJECT_PREFS_OUTPUT_KEY = "at.laplace.tmpxplugin.project.output";
+    public static final String PROJECT_PREFS_LIST_FILE_KEY = "at.laplace.tmpxplugin.project.list.file";
     public static final String PROJECT_PREFS_OPTIONS_KEY = "at.laplace.tmpxplugin.project.options";
 
     // TODO remove

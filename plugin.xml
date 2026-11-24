@@ -216,7 +216,7 @@
             objectClass="org.eclipse.core.resources.IProject">
          <menu
                id="at.laplace.tmpxplugin.menu1"
-               label="Build Path"
+               label="TMP Properties"
                path="edit">
             <separator
                   name="group1">
@@ -226,7 +226,7 @@
                class="at.laplace.tmpxplugin.popup.actions.BuildpathAction"
                enablesFor="1"
                id="at.laplace.tmpxplugin.newAction"
-               label="Configure Build Path"
+               label="Open Properties"
                menubarPath="at.laplace.tmpxplugin.menu1/group1">
          </action>
          <enablement>
@@ -250,9 +250,9 @@
    <extension
          point="org.eclipse.ui.propertyPages">
          <page
-            name="Build Path"
+            name="TMP Assembler"
             nameFilter="*"
-            class="at.laplace.tmpxplugin.ui.BuildPathPropertyPage"
+            class="at.laplace.tmpxplugin.ui.BuildPropertyPage"
             id="at.laplace.tmpxplugin.buildPathPropertyPage">
       		 <enabledWhen>
       		 <and>

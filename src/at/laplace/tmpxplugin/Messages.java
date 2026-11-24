@@ -92,10 +92,15 @@ public class Messages extends NLS {
 	 * The compiler choose label in the preferences.
 	 */
 	public static String COMPILER_NAME;
+    public static String COMPILER_DESCRIPTION;
     public static String COMPILER_CWD;
+    public static String COMPILER_CWD_DESCRIPTION;
     public static String COMPILER_INPUT;
+    public static String COMPILER_INPUT_DESCRIPTION;
     public static String COMPILER_BUILD_DIR;
+    public static String COMPILER_BUILD_DIR_DESCRIPTION;
     public static String COMPILER_OUTPUT;
+    public static String COMPILER_LIST_FILE;
     public static String COMPILER_OPTIONS;
     
 	
