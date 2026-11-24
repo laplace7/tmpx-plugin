@@ -113,75 +113,14 @@ public class ASMReconcilingStategy implements IReconcilingStrategy, IReconciling
     }
 
     editor.updateContentOutlinePage();
-
-    final ArrayList<Position> positions = new ArrayList<Position>();
+    
+    final var detector = new PartitionDetector(document);    
+    final var positions = detector.getPositions();
 
     try {
       int numberOfLines = document.getNumberOfLines();
-      int procOffset, procLength, macroOffset, macroLength, lineOffset, index;
-      boolean findProc = true;
-      boolean findMacro = true;
-      String line = "";
-
-      procOffset = 0;
-      procLength = 0;
-      macroOffset = 0;
-      macroLength = 0;
-      lineOffset = 0;
-      index = 0;
-
       for (int lineNumber = 0; lineNumber < numberOfLines; lineNumber++) {
-        lineOffset = document.getLineOffset(lineNumber);
-        line = document.get(lineOffset, document.getLineLength(lineNumber));
-        line = line.toLowerCase();
-
-        if (findProc) {
-          index = line.indexOf(".function");
-
-          if ((index > -1)
-              && (document.getContentType(lineOffset + index).equals(Document.DEFAULT_CONTENT_TYPE))) {
-            procOffset = lineOffset;
-            findProc = false;
-          }
-        } else {
-          index = line.indexOf("}");
-
-          if ((index > -1)
-              && (document.getContentType(lineOffset + index).equals(Document.DEFAULT_CONTENT_TYPE))) {
-            if ((lineNumber + 1) >= numberOfLines) {
-              procLength = lineOffset + document.getLineLength(lineNumber) - procOffset;
-            } else {
-              procLength = document.getLineOffset(lineNumber + 1) - procOffset;
-            }
-
-            positions.add(new Position(procOffset, procLength));
-            findProc = true;
-          }
-        }
-
-        if (findMacro) {
-          index = line.indexOf(".macro");
-
-          if ((index > -1)
-              && (document.getContentType(lineOffset + index).equals(Document.DEFAULT_CONTENT_TYPE))) {
-            macroOffset = lineOffset;
-            findMacro = false;
-          }
-        } else {
-          index = line.toLowerCase().indexOf("}");
-
-          if ((index > -1)
-              && (document.getContentType(lineOffset + index).equals(Document.DEFAULT_CONTENT_TYPE))) {
-            if ((lineNumber + 1) >= numberOfLines) {
-              macroLength = lineOffset + document.getLineLength(lineNumber) - macroOffset;
-            } else {
-              macroLength = document.getLineOffset(lineNumber + 1) - macroOffset;
-            }
-
-            positions.add(new Position(macroOffset, macroLength));
-            findMacro = true;
-          }
-        }
+          detector.nextLine(lineNumber);
       }
     } catch (BadLocationException e) {
       Activator.getDefault().getLog().log(
@@ -194,5 +133,66 @@ public class ASMReconcilingStategy implements IReconcilingStrategy, IReconciling
         editor.updateFoldingStructure(positions);
       }
     });
+  }
+  
+  private static class PartitionDetector {
+           
+      private final IDocument document;
+      private final int numberOfLines;
+      private final ArrayList<Position> positions;
+      
+      private int startOffset;
+      private String expectedEndName;
+      private int lineOffset;
+      private String line;
+      
+      PartitionDetector(IDocument document) {
+          this.document = document;
+          numberOfLines = document.getNumberOfLines();
+          positions = new ArrayList<>();
+      }
+      
+      public ArrayList<Position> getPositions() {
+        return positions;
+      }
+      
+      public void nextLine(int lineNumber) throws BadLocationException {
+          lineOffset = document.getLineOffset(lineNumber);
+          line = document.get(lineOffset, document.getLineLength(lineNumber));
+
+          if (expectedEndName == null) {
+              if (detect(".macro") || detect(".segment")) {
+                  expectedEndName = ".endm";
+                  startOffset = lineOffset;
+              } else if (detect(".block")) {
+                  if (lineNumber > 0) {
+                      // start in line with label
+                      lineOffset = document.getLineOffset(lineNumber - 1);                      
+                  }
+                  expectedEndName = ".bend";
+                  startOffset = lineOffset;
+              }              
+              return;
+          }
+
+          if (detect(expectedEndName)) {
+              expectedEndName = null;
+
+              int length;
+              if (lineNumber + 1 >= numberOfLines) {
+                  length = lineOffset + document.getLineLength(lineNumber)
+                          - startOffset;
+              } else {
+                  length = document.getLineOffset(lineNumber + 1) - startOffset;
+              }
+
+              positions.add(new Position(startOffset, length));
+          }
+      }
+      
+      private boolean detect(String name) throws BadLocationException {
+          int index = line.indexOf(name);
+          return index != -1 && document.getContentType(lineOffset + index).equals(Document.DEFAULT_CONTENT_TYPE);
+      }
   }
 }
