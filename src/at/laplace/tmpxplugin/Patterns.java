@@ -7,6 +7,7 @@ public class Patterns {
     public final static Pattern EXTENSION_PATTERN_ALL = Pattern.compile("(asm|inc|sym|s)",Pattern.CASE_INSENSITIVE);
     public final static Pattern EXTENSION_PATTERN_INCLUDES = Pattern.compile("(inc|sym)",Pattern.CASE_INSENSITIVE);
     public final static Pattern EXTENSION_PATTERN_MAINFILES = Pattern.compile("(asm|s)",Pattern.CASE_INSENSITIVE);
+    public final static Pattern EXTENSION_PATTERN_PROGRAM = Pattern.compile("prg",Pattern.CASE_INSENSITIVE);
 
     public final static Pattern LABEL_PATTERN = Pattern.compile("^(\\w+).*(\\r|\\n)*$", Pattern.CASE_INSENSITIVE);
     // TODO remove    

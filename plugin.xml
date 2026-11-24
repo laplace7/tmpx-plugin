@@ -171,7 +171,7 @@
                   </count>	
                   <iterate>
                      <or>
-                        <test property="org.eclipse.debug.ui.matchesPattern" value="*.prg"/>
+                        <test property="org.eclipse.debug.ui.matchesPattern" value="*.(prg|asm|s)"/>
                         <instanceof value="org.eclipse.core.resources.IFile"/>
                      </or>
                   </iterate>

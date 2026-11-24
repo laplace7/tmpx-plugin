@@ -111,6 +111,8 @@ public class Messages extends NLS {
     public static String COMPILER_LOCAL_CFG;
 	public static String COMPILER_LIBDIRS;
 	public static String COMPILER_LIBDIRS_CHOOSETEXT;
+	
+	public static String LAUNCH_CONFIG_ERROR;
 
 	/**
 	 * The debugger choose label in the preferences.
@@ -322,7 +324,7 @@ public class Messages extends NLS {
 	/**
 	 * Text for executable.
 	 */
-	public static String EXECUTABLE_NAME;
+	public static String LAUNCH_CONFIG_NAME;
 
 	/**
 	 * Text for main launch-tab.

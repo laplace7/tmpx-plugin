@@ -21,15 +21,10 @@
  */ 
 package at.laplace.tmpxplugin.launch;
 
-import java.io.File;
 import java.io.FileNotFoundException;
 
-import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IFolder;
-import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.debug.core.DebugPlugin;
 import org.eclipse.debug.core.ILaunchConfiguration;
@@ -43,6 +38,7 @@ import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
+import org.eclipse.ui.statushandlers.StatusManager;
 
 import at.laplace.tmpxplugin.Activator;
 import at.laplace.tmpxplugin.Constants;
@@ -63,122 +59,84 @@ public class ASMLaunchShortcut implements ILaunchShortcut {
 	 * {@inheritDoc}
 	 */
 	public void launch(ISelection selection, String mode) {
-		if (!(selection instanceof IStructuredSelection)) {
+		if (!(selection instanceof IStructuredSelection structuredSelection)) {
 			return;
 		}
 
-		Object firstSelection = ((IStructuredSelection) selection).getFirstElement();
+		Object firstSelection = structuredSelection.getFirstElement();
 
 		if (!(firstSelection instanceof IFile)) {
 			Activator.getDefault().getLog().log(
 					new Status(Status.ERROR, Constants.PLUGIN_ID, Status.OK,
 							Messages.LAUNCH_ERROR, new FileNotFoundException("Selection is not an IFile " + firstSelection)));
-
 			return;
 		}
+		
 		IFile file = (IFile) firstSelection;
-		if (file.getFileExtension() == null || !Patterns.EXTENSION_PATTERN_ALL.matcher(file.getFileExtension()).matches()){
+		var extension = file.getFileExtension();
+		boolean isProgram = extension != null && Patterns.EXTENSION_PATTERN_PROGRAM.matcher(extension).matches();
+		boolean isSource = extension != null && Patterns.EXTENSION_PATTERN_MAINFILES.matcher(extension).matches();
+		if (extension == null || !(isProgram || isSource)){
 			Activator.getDefault().getLog().log(
 					new Status(Status.ERROR, Constants.PLUGIN_ID, Status.OK,
 							Messages.LAUNCH_ERROR, new FileNotFoundException("Selection does not have the right extension "  + file.getName())));
-
 			return;
 		}
 
-		if (Patterns.EXTENSION_PATTERN_INCLUDES.matcher(file.getFileExtension()).matches()){
-			IContainer parent = file.getParent();
-			file = null;
-
-			try {
-				IResource[] members = parent.members();
-				for (int i =0; i < members.length && file == null; i++){
-					if (members[i] instanceof IFile && members[i].getFileExtension() != null){
-						if (Patterns.EXTENSION_PATTERN_MAINFILES.matcher(members[i].getFileExtension()).matches()){
-							file = (IFile) members[i];
-						}
-					}
-				}
-			} catch (CoreException e) {
-				Activator.getDefault().getLog().log(
-						new Status(Status.ERROR, Constants.PLUGIN_ID, Status.OK,
-								Messages.LAUNCH_ERROR, e));
-
-			}
-
-			if (file == null){
-				Activator.getDefault().getLog().log(
-						new Status(Status.ERROR, Constants.PLUGIN_ID, Status.OK,
-								Messages.LAUNCH_ERROR, new FileNotFoundException("Could not find any file to launch")));
-
-				return;
-			}
-		}
-
-
-		var settings = ProjectPrefenceHelper.getStore(file.getProject());
-		String buildDir = ProjectPrefenceHelper.getBuildDir(settings);
-		String destdir = file.getProject().getLocationURI().getRawPath() + File.separator + buildDir;
-
-		IFolder destFolder = file.getProject().getFolder(buildDir);
-
-		if (!destFolder.exists()){
-			try {
-				file.touch(new NullProgressMonitor());
-			} catch (CoreException e) {
-			}
-			return;
-		}
-
-		String dest = destdir + File.separator + file.getName();
-		String destName = file.getName().substring(0,file.getName().lastIndexOf('.')+1)+"prg";
-
-		IFile destFile = destFolder.getFile(destName);
-		if (!destFile.exists()){
-			try {
-				file.touch(new NullProgressMonitor());
-			} catch (CoreException e) {
-			}
-			Activator.getDefault().getLog().log(
-					new Status(Status.ERROR, Constants.PLUGIN_ID, "Dest file does not exist : " +destFile.getLocation().toOSString()));
-			return;
-		}
-
-		dest = dest.substring(0,dest.lastIndexOf(File.separatorChar)+1) + destName;
-
-		String wfile = dest;
-		int pos = wfile.lastIndexOf(File.separator);
-
-		if (pos > 0) {
-			wfile = wfile.substring(0, pos);
-		}
+        var project = file.getProject();
+        var settings = ProjectPrefenceHelper.getStore(project);
+        String buildDir = ProjectPrefenceHelper.getBuildDir(settings);        
+        var output = ProjectPrefenceHelper.getOutput(settings);
+        
+        var absBuildDir = ProjectPrefenceHelper.makeAbsolute(project, buildDir);
+        var absOutputFile = ProjectPrefenceHelper.makeAbsolute(project, buildDir, output);
+        
+        if (buildDir.isEmpty() || output.isEmpty()) {
+            Status status = new Status(Status.ERROR, Constants.PLUGIN_ID, Messages.LAUNCH_CONFIG_ERROR);
+            StatusManager.getManager().handle(status,StatusManager.SHOW);
+            return;
+        }
 
 		try {
-			ILaunchManager manager = DebugPlugin.getDefault().getLaunchManager();
-			ILaunchConfigurationType type = manager.getLaunchConfigurationType(Constants.LAUNCH_CONFIGURATION_TYPE_ID);
-			ILaunchConfiguration[] configs = manager.getLaunchConfigurations(type);
-
-			for (ILaunchConfiguration config : configs) {
-				if (config.getAttribute(Constants.LAUNCH_FILE, "").equalsIgnoreCase(destName) &&
-					config.getAttribute(Constants.LAUNCH_WORKING_DIRECTORY,"").equalsIgnoreCase(wfile)
-						) {
-					DebugUITools.launch(config, mode);
-					return;
-				}
-			}
-
-			ILaunchConfigurationWorkingCopy copy = type.newInstance(
-					null,
-					manager.generateUniqueLaunchConfigurationNameFrom(Messages.EXECUTABLE_NAME));
-			copy.setAttribute(Constants.LAUNCH_FILE, destName);
-			copy.setAttribute(Constants.LAUNCH_WORKING_DIRECTORY, wfile);
-			copy.setAttribute(Constants.LAUNCH_ARGUMENTS, "");
-			ILaunchConfiguration config = copy.doSave();
+		    var config = findLaunchConfig(absBuildDir, absOutputFile);
+		    if (config == null) {
+		        var name = Messages.LAUNCH_CONFIG_NAME.formatted(output, project.getName());
+		        config = createLaunchConfig(name, absBuildDir, absOutputFile);
+		    }
 			DebugUITools.launch(config, mode);
 		} catch (CoreException e) {
 			Activator.getDefault().getLog().log(
 					new Status(Status.ERROR, Constants.PLUGIN_ID, Status.OK,
 							Messages.LAUNCH_ERROR, e));
 		}
+	}
+	
+	private ILaunchConfiguration findLaunchConfig(String buildDir, String output) throws CoreException {
+        ILaunchManager manager = DebugPlugin.getDefault().getLaunchManager();
+        ILaunchConfigurationType type = manager.getLaunchConfigurationType(Constants.LAUNCH_CONFIGURATION_TYPE_ID);
+        ILaunchConfiguration[] configs = manager.getLaunchConfigurations(type);
+
+        for (ILaunchConfiguration config : configs) {
+            if (config.getAttribute(Constants.LAUNCH_FILE, "").equalsIgnoreCase(output) &&
+                config.getAttribute(Constants.LAUNCH_WORKING_DIRECTORY,"").equalsIgnoreCase(buildDir)
+                    ) {
+                return config;
+            }
+        }
+        return null;
+	}
+	
+	private ILaunchConfiguration createLaunchConfig(String name, String buildDir, String output) throws CoreException {
+        ILaunchManager manager = DebugPlugin.getDefault().getLaunchManager();
+        ILaunchConfigurationType type = manager.getLaunchConfigurationType(Constants.LAUNCH_CONFIGURATION_TYPE_ID);
+        ILaunchConfigurationWorkingCopy copy = type.newInstance(
+                null,
+                manager.generateUniqueLaunchConfigurationNameFrom(name));
+        copy.setAttribute(Constants.LAUNCH_FILE, output);
+        copy.setAttribute(Constants.LAUNCH_WORKING_DIRECTORY, buildDir);
+        copy.setAttribute(Constants.LAUNCH_ARGUMENTS, "");
+        ILaunchConfiguration config = copy.doSave();
+        return config;
 	}
 
 	/**
