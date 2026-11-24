@@ -21,13 +21,14 @@
  */ 
 package at.laplace.tmpxplugin;
 
-import java.awt.print.PrinterJob;
+import static at.laplace.tmpxplugin.prefs.ProjectPrefenceHelper.makeAbsolute;
+
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
+import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
@@ -35,6 +36,7 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceDelta;
 import org.eclipse.core.resources.IResourceDeltaVisitor;
 import org.eclipse.core.resources.IncrementalProjectBuilder;
+import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.Status;
@@ -102,19 +104,35 @@ public class TmpBuilder extends IncrementalProjectBuilder {
         project.refreshLocal(IResource.DEPTH_INFINITE, null);
     }
 
-    /**
-     * TODO - clean build-dir
-     */
     @Override
     protected void clean(IProgressMonitor monitor) throws CoreException {
         var project = getProject();
         var settings = ProjectPrefenceHelper.getStore(project);
         String buildDir = ProjectPrefenceHelper.getBuildDir(settings);
-        IFolder destFolder = project.getFolder(buildDir);
         var output = ProjectPrefenceHelper.getOutput(settings);
-        var listFile = ProjectPrefenceHelper.getListFile(settings);
-        // TODO implement
+
+        // only try to delete the known output and list file 
+        if (!output.isEmpty()) {
+            var file = makeAbsolute(project, buildDir, output);
+            deleteFile(file, monitor);
+        }
+        
+        var listFile = ProjectPrefenceHelper.getListFile(settings).trim();
+        if (!listFile.isEmpty()) {
+            var file = makeAbsolute(project, buildDir, listFile);
+            deleteFile(file, monitor);            
+        }
     }
+    
+    private void deleteFile(String file, IProgressMonitor monitor) throws CoreException {
+        URI fileUri = Paths.get(file).toUri();
+        for (var resource : ResourcesPlugin.getWorkspace().getRoot().findFilesForLocationURI(fileUri)) {
+            if (resource.exists()) {
+                resource.delete(true, monitor);
+            }            
+        }
+    }
+    
     /**
      * Builds only the project delta.
      * 
@@ -135,29 +153,6 @@ public class TmpBuilder extends IncrementalProjectBuilder {
         project.refreshLocal(IResource.DEPTH_INFINITE, null);
     }
 
-    private static String makeAbsolute(IProject project, String... parts) {
-        int length = parts.length;
-        if (length == 0) {
-            throw new IllegalArgumentException("Missing parts");
-        }
-        
-        var base = project.getLocationURI().getRawPath();
-        var relativeParts = new LinkedList<String>();
-        for (int i = length - 1; i >= 0; i --) {
-            var path = parts[i];
-            if (new File(path).isAbsolute()) {
-                base = path;
-                break;
-            } else {
-                relativeParts.add(0, path);
-            }
-        }
-        
-        if (relativeParts.isEmpty()) {
-            return base;
-        }
-        return base + File.separator + relativeParts.stream().collect(Collectors.joining(File.separator));
-    }
     
     /**
      * Compiles a given file.
