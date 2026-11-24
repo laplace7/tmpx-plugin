@@ -18,7 +18,7 @@
  You should have received a copy of the GNU General Public License
  along with this program; if not, write to the Free Software
  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-*/ 
+*/
 package at.laplace.tmpxplugin.editor;
 
 import java.util.ArrayList;
@@ -52,7 +52,6 @@ import org.eclipse.ui.views.contentoutline.IContentOutlinePage;
 
 import at.laplace.tmpxplugin.Constants;
 
-
 /**
  * The editor class.
  * 
@@ -61,218 +60,232 @@ import at.laplace.tmpxplugin.Constants;
  */
 public class ASMEditor extends TextEditor {
 
-  private ASMContentOutlinePage contentOutlinePage;
+    private ASMContentOutlinePage contentOutlinePage;
 
-  /**
-   * The ContextTypeRegistry of this Editor.
-   */
-  private static ContextTypeRegistry contextTypeRegistry;
+    /**
+     * The ContextTypeRegistry of this Editor.
+     */
+    private static ContextTypeRegistry contextTypeRegistry;
 
-  private ProjectionAnnotationModel annotationModel;
+    private ProjectionAnnotationModel annotationModel;
 
-  /**
-   * Returns the ContextTypeRegistry of this Editor.
-   * 
-   * @return The ContextTypeRegistry.
-   */
-  public static ContextTypeRegistry getContextTypeRegistry() {
-    if (contextTypeRegistry == null) {
-      contextTypeRegistry = new ContextTypeRegistry();
-      contextTypeRegistry.addContextType(new TemplateContextType(Constants.ASM_EDITOR_CONTEXT));
+    /**
+     * Returns the ContextTypeRegistry of this Editor.
+     * 
+     * @return The ContextTypeRegistry.
+     */
+    public static ContextTypeRegistry getContextTypeRegistry() {
+        if (contextTypeRegistry == null) {
+            contextTypeRegistry = new ContextTypeRegistry();
+            contextTypeRegistry.addContextType(
+                    new TemplateContextType(Constants.ASM_EDITOR_CONTEXT));
+        }
+
+        return contextTypeRegistry;
     }
 
-    return contextTypeRegistry;
-  }
+    /**
+     * {@inheritDoc}
+     */
+    protected void initializeEditor() {
+        super.initializeEditor();
+        setSourceViewerConfiguration(new ASMSourceViewerConfiguration(this));
+    }
 
-  /**
-   * {@inheritDoc}
-   */
-  protected void initializeEditor() {
-    super.initializeEditor();
-    setSourceViewerConfiguration(new ASMSourceViewerConfiguration(this));
-  }
-
-  @Override
+    @Override
     protected boolean isTabsToSpacesConversionEnabled() {
         return true;
     }
-  
-  /**
-   * {@inheritDoc}
-   */
-  protected void initializeKeyBindingScopes() {
-    setKeyBindingScopes(new String[] { "at.laplace.tmpxplugin.editorScope" });
-  }
 
-  /**
-   * {@inheritDoc}
-   */
-  public void init(IEditorSite site, IEditorInput input) throws PartInitException {
-    super.init(site, input);
-
-    IDocument document = getDocumentProvider().getDocument(getEditorInput());
-    FastPartitioner partitioner = new FastPartitioner(new ASMPartitionScanner(),
-                                                      new String[] { Constants.PARTITION_STRING,
-                                                                    Constants.PARTITION_COMMENT_SINGLE });
-    partitioner.connect(document);
-    document.setDocumentPartitioner(partitioner);
-  }
-
-  /**
-   * {@inheritDoc}
-   */
-  protected void createActions() {
-    super.createActions();
-
-    ResourceBundle bundle = ResourceBundle.getBundle("at.laplace.tmpxplugin.messages");
-
-    IAction action = new TextOperationAction(bundle, "ContentAssistProposal.", this,
-                                             ISourceViewer.CONTENTASSIST_PROPOSALS);
-    action.setActionDefinitionId(ITextEditorActionDefinitionIds.CONTENT_ASSIST_PROPOSALS);
-    setAction("ContentAssistProposal", action);
-    markAsStateDependentAction("ContentAssistProposal", true);
-
-    if (getSourceViewer() instanceof SourceViewer) {
-      action = new ToggleCommentAction((SourceViewer) getSourceViewer());
-      action.setActionDefinitionId("at.laplace.tmpxplugin.toggle.comment");
-      setAction("toggle.comment", action);
-      markAsStateDependentAction("toggle.comment", true);
-      
-      action = new TriggerBuildAction((SourceViewer) getSourceViewer(),this.getEditorInput());
-      action.setActionDefinitionId("at.laplace.tmpxplugin.trigger.build");
-      setAction("trigger.build", action);
-      
+    /**
+     * {@inheritDoc}
+     */
+    protected void initializeKeyBindingScopes() {
+        setKeyBindingScopes(
+                new String[] { "at.laplace.tmpxplugin.editorScope" });
     }
-  }
 
-  /**
-   * Refreshs the editor.
-   */
-  public void refreshSourceViewer() {
-    ISourceViewer isv = getSourceViewer();
-    if (isv instanceof SourceViewer) {
-      ((SourceViewer) getSourceViewer()).refresh();
+    /**
+     * {@inheritDoc}
+     */
+    public void init(IEditorSite site, IEditorInput input)
+            throws PartInitException {
+        super.init(site, input);
+
+        IDocument document = getDocumentProvider()
+                .getDocument(getEditorInput());
+        FastPartitioner partitioner = new FastPartitioner(
+                new ASMPartitionScanner(),
+                new String[] { Constants.PARTITION_STRING,
+                        Constants.PARTITION_COMMENT_SINGLE });
+        partitioner.connect(document);
+        document.setDocumentPartitioner(partitioner);
     }
-  }
 
-  /**
-   * {@inheritDoc}
-   */
-  public void dispose() {
-    super.dispose();
+    /**
+     * {@inheritDoc}
+     */
+    protected void createActions() {
+        super.createActions();
 
-    SourceViewerConfiguration svc = getSourceViewerConfiguration();
-    if (svc instanceof ASMSourceViewerConfiguration) {
-      ((ASMSourceViewerConfiguration) svc).dispose();
-    }
-  }
+        ResourceBundle bundle = ResourceBundle
+                .getBundle("at.laplace.tmpxplugin.messages");
 
-  /**
-   * {@inheritDoc}
-   */
-  public Object getAdapter(Class adapter) {
-    if (adapter != null && IContentOutlinePage.class.equals(adapter)) {
-      if (contentOutlinePage == null) {
-        contentOutlinePage = new ASMContentOutlinePage(this);
-        IEditorInput input = getEditorInput();
+        IAction action = new TextOperationAction(bundle,
+                "ContentAssistProposal.", this,
+                ISourceViewer.CONTENTASSIST_PROPOSALS);
+        action.setActionDefinitionId(
+                ITextEditorActionDefinitionIds.CONTENT_ASSIST_PROPOSALS);
+        setAction("ContentAssistProposal", action);
+        markAsStateDependentAction("ContentAssistProposal", true);
 
-        if (input != null) {
-          contentOutlinePage.setInput(input);
+        if (getSourceViewer() instanceof SourceViewer viewer) {
+            action = new ToggleCommentAction(viewer);
+            action.setActionDefinitionId(
+                    "at.laplace.tmpxplugin.toggle.comment");
+            setAction("toggle.comment", action);
+            markAsStateDependentAction("toggle.comment", true);
+
+            action = new TriggerBuildAction(viewer, this.getEditorInput());
+            action.setActionDefinitionId("at.laplace.tmpxplugin.trigger.build");
+            setAction("trigger.build", action);
+
         }
-      }
-
-      return contentOutlinePage;
     }
-    return super.getAdapter(adapter);
-  }
 
-  /**
-   * Updates the view of the outlinepage.
-   */
-  public void updateContentOutlinePage() {
-    if (contentOutlinePage != null) {
-      IEditorInput input = getEditorInput();
-
-      if (input != null) {
-        contentOutlinePage.setInput(input);
-      }
-    }
-  }
-
-  /**
-   * {@inheritDoc}
-   */
-  public void createPartControl(Composite parent) {
-    super.createPartControl(parent);
-    ProjectionViewer viewer = (ProjectionViewer) getSourceViewer();
-
-    ProjectionSupport projectionSupport = new ProjectionSupport(viewer, getAnnotationAccess(), getSharedColors());
-    projectionSupport.install();
-
-    // turn projection mode on
-    viewer.doOperation(ProjectionViewer.TOGGLE);
-
-    annotationModel = viewer.getProjectionAnnotationModel();
-  }
-
-  /**
-   * {@inheritDoc}
-   */
-  protected ISourceViewer createSourceViewer(Composite parent, IVerticalRuler ruler, int styles) {
-    ISourceViewer viewer = new ProjectionViewer(parent, ruler, getOverviewRuler(), isOverviewRulerVisible(), styles);
-
-    // ensure decoration support has been created and configured.
-    getSourceViewerDecorationSupport(viewer);
-
-    viewer.setDefaultPrefixes(new String[] { "//" }, IDocument.DEFAULT_CONTENT_TYPE);
-    viewer.setDefaultPrefixes(new String[] { "//" }, Constants.PARTITION_COMMENT_SINGLE);
-    return viewer;
-  }
-
-  /**
-   * Update the folding structure with a given list of Positions.
-   * 
-   * @param positions The positions
-   */
-  public void updateFoldingStructure(ArrayList<Position> positions) {
-    ArrayList<ProjectionAnnotation> deletions = new ArrayList<ProjectionAnnotation>();
-    Object annotationObject = null;
-    ProjectionAnnotation annotation = null;
-    Position position = null;
-
-    for (Iterator<?> iter = annotationModel.getAnnotationIterator(); iter.hasNext();) {
-      annotationObject = iter.next();
-
-      if (annotationObject instanceof ProjectionAnnotation) {
-        annotation = (ProjectionAnnotation) annotationObject;
-
-        position = annotationModel.getPosition(annotation);
-
-        if (positions.contains(position)) {
-          positions.remove(position);
-        } else {
-          deletions.add(annotation);
+    /**
+     * Refreshs the editor.
+     */
+    public void refreshSourceViewer() {
+        ISourceViewer isv = getSourceViewer();
+        if (isv instanceof SourceViewer viewer) {
+            viewer.refresh();
         }
-      }
-
     }
 
-    Annotation[] removeAnnotations = deletions.toArray(new Annotation[deletions.size()]);
+    /**
+     * {@inheritDoc}
+     */
+    public void dispose() {
+        super.dispose();
 
-    // this will hold the new annotations along
-    // with their corresponding positions
-    HashMap<ProjectionAnnotation, Position> newAnnotations = new HashMap<ProjectionAnnotation, Position>();
-
-    for (int i = 0; i < positions.size(); i++) {
-      annotation = new ProjectionAnnotation();
-
-      newAnnotations.put(annotation, positions.get(i));
+        SourceViewerConfiguration svc = getSourceViewerConfiguration();
+        if (svc instanceof ASMSourceViewerConfiguration config) {
+            config.dispose();
+        }
     }
 
-    annotationModel.modifyAnnotations(removeAnnotations, newAnnotations, new Annotation[] {});
-  }
+    /**
+     * {@inheritDoc}
+     */
+    public <T> T getAdapter(Class<T> adapter) {
+        if (IContentOutlinePage.class == adapter) {
+            if (contentOutlinePage == null) {
+                contentOutlinePage = new ASMContentOutlinePage(this);
+                IEditorInput input = getEditorInput();
 
-public ASMContentOutlinePage getOutline() {
-	return this.contentOutlinePage;
-}
+                if (input != null) {
+                    contentOutlinePage.setInput(input);
+                }
+            }
+
+            return adapter.cast(contentOutlinePage);
+        }
+        return super.getAdapter(adapter);
+    }
+
+    /**
+     * Updates the view of the outlinepage.
+     */
+    public void updateContentOutlinePage() {
+        if (contentOutlinePage != null) {
+            IEditorInput input = getEditorInput();
+
+            if (input != null) {
+                contentOutlinePage.setInput(input);
+            }
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public void createPartControl(Composite parent) {
+        super.createPartControl(parent);
+        ProjectionViewer viewer = (ProjectionViewer) getSourceViewer();
+
+        ProjectionSupport projectionSupport = new ProjectionSupport(viewer,
+                getAnnotationAccess(), getSharedColors());
+        projectionSupport.install();
+
+        // turn projection mode on
+        viewer.doOperation(ProjectionViewer.TOGGLE);
+
+        annotationModel = viewer.getProjectionAnnotationModel();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    protected ISourceViewer createSourceViewer(Composite parent,
+            IVerticalRuler ruler, int styles) {
+        ISourceViewer viewer = new ProjectionViewer(parent, ruler,
+                getOverviewRuler(), isOverviewRulerVisible(), styles);
+
+        // ensure decoration support has been created and configured.
+        getSourceViewerDecorationSupport(viewer);
+
+        viewer.setDefaultPrefixes(new String[] { ";" },
+                IDocument.DEFAULT_CONTENT_TYPE);
+        viewer.setDefaultPrefixes(new String[] { ";" },
+                Constants.PARTITION_COMMENT_SINGLE);
+        return viewer;
+    }
+
+    /**
+     * Update the folding structure with a given list of Positions.
+     * 
+     * @param positions
+     *            The positions
+     */
+    public void updateFoldingStructure(ArrayList<Position> positions) {
+        ArrayList<ProjectionAnnotation> deletions = new ArrayList<ProjectionAnnotation>();
+        Object annotationObject = null;
+        Position position = null;
+
+        for (Iterator<?> iter = annotationModel.getAnnotationIterator(); iter
+                .hasNext();) {
+            annotationObject = iter.next();
+
+            if (annotationObject instanceof ProjectionAnnotation annotation) {
+                position = annotationModel.getPosition(annotation);
+
+                if (positions.contains(position)) {
+                    positions.remove(position);
+                } else {
+                    deletions.add(annotation);
+                }
+            }
+
+        }
+
+        Annotation[] removeAnnotations = deletions
+                .toArray(new Annotation[deletions.size()]);
+
+        // this will hold the new annotations along
+        // with their corresponding positions
+        HashMap<ProjectionAnnotation, Position> newAnnotations = new HashMap<ProjectionAnnotation, Position>();
+
+        for (int i = 0; i < positions.size(); i++) {
+            var annotation = new ProjectionAnnotation();
+            newAnnotations.put(annotation, positions.get(i));
+        }
+
+        annotationModel.modifyAnnotations(removeAnnotations, newAnnotations,
+                new Annotation[] {});
+    }
+
+    public ASMContentOutlinePage getOutline() {
+        return this.contentOutlinePage;
+    }
 }
