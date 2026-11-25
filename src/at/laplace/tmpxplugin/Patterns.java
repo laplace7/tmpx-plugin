@@ -36,5 +36,12 @@ public class Patterns {
 
     public static final Pattern CONSTVAR_PATTERN = Pattern.compile("^(\\w+)\\s+(\\=|\\.var)\\s+([^;\\n\\r]*)(;.*)?(\\r|\\n)*$",Pattern.CASE_INSENSITIVE);
     public static final Pattern EQUALS_PATTERN = Pattern.compile("\\s*=.*");
+    
+    // main.asm(10) : error 32: undefined label; 'label1'
+    // include/test.asm(3) : error 5: missing operand at col 9
+    // groups: file, line number, error number, message
+    public static final Pattern ERROR_PATTERN = Pattern.compile("^([^(]+)\\((\\d+)\\) : error (\\d+): (.+)$");
+    // group: column number
+    public static final Pattern AT_COL_PATTERN = Pattern.compile(".*at col (\\d+).*");
 
 }

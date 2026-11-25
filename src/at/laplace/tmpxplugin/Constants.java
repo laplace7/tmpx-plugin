@@ -50,6 +50,11 @@ public class Constants {
 	public static final String NATURE_ID = "at.laplace.tmpxplugin.nature"; //$NON-NLS-1$
 
 	/**
+	 * THe problem marker ID.
+	 */
+	public static final String MARKER_ID = "at.laplace.tmpxplugin.tmpxMarker";
+
+	/**
 	 * The LaunchConfigurationType ID.
 	 */
 	public static final String LAUNCH_CONFIGURATION_TYPE_ID = "at.laplace.tmpxplugin.launch"; //$NON-NLS-1$

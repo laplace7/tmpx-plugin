@@ -291,4 +291,24 @@
             value="false">
       </persistent>
    </extension>
+<extension point="org.eclipse.ui.editors.markerAnnotationSpecification">
+  <specification
+      annotationType="org.eclipse.ui.workbench.texteditor.error"
+      markerType="at.laplace.tmpxplugin.tmpxMarker"
+      label="TMPx Error"
+      textPreferenceKey="tmpxErrorText"
+      textPreferenceValue="true"
+      highlightPreferenceKey="tmpxErrorHighlight"
+      highlightPreferenceValue="false"
+      overviewRulerPreferenceKey="tmpxErrorOverview"
+      overviewRulerPreferenceValue="true"
+      verticalRulerPreferenceKey="tmpxErrorVerticalRuler"
+      verticalRulerPreferenceValue="true"
+      includeOnPreferencePage="true"
+      presentationLayer="4"
+      showInNextPrevDropdownToolbarAction="true"
+      isGoToNextNavigationTarget="true"
+      isGoToPreviousNavigationTarget="true"/>
+</extension>   
+   
 </plugin>

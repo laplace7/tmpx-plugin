@@ -22,7 +22,9 @@
 package at.laplace.tmpxplugin.editor;
 
 import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.jface.text.DefaultTextHover;
 import org.eclipse.jface.text.IDocument;
+import org.eclipse.jface.text.ITextHover;
 import org.eclipse.jface.text.contentassist.ContentAssistant;
 import org.eclipse.jface.text.contentassist.IContentAssistant;
 import org.eclipse.jface.text.presentation.IPresentationReconciler;
@@ -31,6 +33,8 @@ import org.eclipse.jface.text.reconciler.IReconciler;
 import org.eclipse.jface.text.reconciler.IReconcilingStrategy;
 import org.eclipse.jface.text.reconciler.MonoReconciler;
 import org.eclipse.jface.text.rules.DefaultDamagerRepairer;
+import org.eclipse.jface.text.source.DefaultAnnotationHover;
+import org.eclipse.jface.text.source.IAnnotationHover;
 import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.jface.text.source.SourceViewerConfiguration;
 
@@ -120,6 +124,16 @@ public class ASMSourceViewerConfiguration extends SourceViewerConfiguration {
 
     return reconciler;
   }
+  
+  @Override
+    public IAnnotationHover getAnnotationHover(ISourceViewer sourceViewer) {
+        return new DefaultAnnotationHover();
+    }
+  @Override
+    public ITextHover getTextHover(ISourceViewer sourceViewer,
+            String contentType) {
+        return new DefaultTextHover(sourceViewer);
+    }
 
   /**
    * Remove all rule scanners from property change listener.
