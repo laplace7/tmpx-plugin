@@ -18,7 +18,7 @@
  You should have received a copy of the GNU General Public License
  along with this program; if not, write to the Free Software
  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
- */ 
+ */
 package at.laplace.tmpxplugin;
 
 import static at.laplace.tmpxplugin.prefs.ProjectPrefenceHelper.makeAbsolute;
@@ -45,7 +45,7 @@ import org.eclipse.ui.statushandlers.StatusManager;
 
 import at.laplace.tmpxplugin.prefs.ProjectPrefenceHelper;
 
-/**  
+/**
  * Builder for ASM-Files.
  * 
  * @author Andy Reek
@@ -54,16 +54,16 @@ import at.laplace.tmpxplugin.prefs.ProjectPrefenceHelper;
 public class TmpBuilder extends IncrementalProjectBuilder {
 
     private IProgressMonitor monitor;
-    
+
     public TmpBuilder() {
         // Leave comments for debugging
         // Activator.getConsole().bringConsoleToFront();
         // Activator.getConsole().println("TmpBuilder created");
     }
-    
 
     @Override
-    protected IProject[] build(int kind, Map<String,String> args, IProgressMonitor monitor) throws CoreException {
+    protected IProject[] build(int kind, Map<String, String> args,
+            IProgressMonitor monitor) throws CoreException {
         // Leave comments for debugging
         // Activator.getConsole().bringConsoleToFront();
         // Activator.getConsole().println("TmpBuilder build");
@@ -79,9 +79,10 @@ public class TmpBuilder extends IncrementalProjectBuilder {
             } else {
                 incrementalBuild(delta, monitor);
             }
-        } catch (CoreException ex){
-            Status status = new Status(Status.ERROR, Constants.PLUGIN_ID, "Problems while compiling", ex);
-            StatusManager.getManager().handle(status,StatusManager.SHOW);
+        } catch (CoreException ex) {
+            Status status = new Status(Status.ERROR, Constants.PLUGIN_ID,
+                    "Problems while compiling", ex);
+            StatusManager.getManager().handle(status, StatusManager.SHOW);
         }
 
         return null;
@@ -90,8 +91,9 @@ public class TmpBuilder extends IncrementalProjectBuilder {
     /**
      * Builds the whole project.
      * 
-     * @param monitor A monitor.
-     * @throws CoreException 
+     * @param monitor
+     *            A monitor.
+     * @throws CoreException
      */
     private void fullBuild(IProgressMonitor monitor) throws CoreException {
         IProject project = getProject();
@@ -111,36 +113,41 @@ public class TmpBuilder extends IncrementalProjectBuilder {
         String buildDir = ProjectPrefenceHelper.getBuildDir(settings);
         var output = ProjectPrefenceHelper.getOutput(settings);
 
-        // only try to delete the known output and list file 
+        // only try to delete the known output and list file
         if (!output.isEmpty()) {
             var file = makeAbsolute(project, buildDir, output);
             deleteFile(file, monitor);
         }
-        
+
         var listFile = ProjectPrefenceHelper.getListFile(settings).trim();
         if (!listFile.isEmpty()) {
             var file = makeAbsolute(project, buildDir, listFile);
-            deleteFile(file, monitor);            
+            deleteFile(file, monitor);
         }
     }
-    
-    private void deleteFile(String file, IProgressMonitor monitor) throws CoreException {
+
+    private void deleteFile(String file, IProgressMonitor monitor)
+            throws CoreException {
         URI fileUri = Paths.get(file).toUri();
-        for (var resource : ResourcesPlugin.getWorkspace().getRoot().findFilesForLocationURI(fileUri)) {
+        for (var resource : ResourcesPlugin.getWorkspace().getRoot()
+                .findFilesForLocationURI(fileUri)) {
             if (resource.exists()) {
                 resource.delete(true, monitor);
-            }            
+            }
         }
     }
-    
+
     /**
      * Builds only the project delta.
      * 
-     * @param delta The given delta.
-     * @param monitor A monitor.
-     * @throws CoreException 
+     * @param delta
+     *            The given delta.
+     * @param monitor
+     *            A monitor.
+     * @throws CoreException
      */
-    private void incrementalBuild(IResourceDelta delta, IProgressMonitor monitor) throws CoreException {
+    private void incrementalBuild(IResourceDelta delta,
+            IProgressMonitor monitor) throws CoreException {
         IProject project = getProject();
         monitor.beginTask(Messages.BUILDING_TITLE, 100);
         monitor.subTask(Messages.BUILDING_TEXT_COMPILE);
@@ -153,28 +160,30 @@ public class TmpBuilder extends IncrementalProjectBuilder {
         project.refreshLocal(IResource.DEPTH_INFINITE, null);
     }
 
-    
     /**
      * Compiles a given file.
      * 
-     * @param file The file to be compiled.
-     * @throws CoreException 
-     * @throws IOException 
+     * @param file
+     *            The file to be compiled.
+     * @throws CoreException
+     * @throws IOException
      */
     private void compileProject(IProject project) throws CoreException {
-        
+
         var settings = ProjectPrefenceHelper.getStore(project);
         String buildDir = ProjectPrefenceHelper.getBuildDir(settings);
         IFolder destFolder = project.getFolder(buildDir);
 
-        if (!destFolder.exists()){
+        if (!destFolder.exists()) {
             destFolder.create(IResource.NONE, true, null);
-            destFolder.setDerived(true,null);
+            destFolder.setDerived(true, null);
         }
 
         String cmdLine[] = createCommandLine(project);
-        if (cmdLine == null){
-            throw new CoreException(new Status(Status.ERROR, Constants.PLUGIN_ID, "Could not compile. Please make sure that you have set the path to Kickass.jar in the Preferences"));
+        if (cmdLine == null) {
+            throw new CoreException(new Status(Status.ERROR,
+                    Constants.PLUGIN_ID,
+                    "Could not compile. Please make sure that you have set the path to Kickass.jar in the Preferences"));
         }
 
         var cwd = makeAbsolute(project, ProjectPrefenceHelper.getCwd(settings));
@@ -186,62 +195,63 @@ public class TmpBuilder extends IncrementalProjectBuilder {
     }
 
     private static String[] createCommandLine(IProject project) {
-        IPreferenceStore preferences = Activator.getDefault().getPreferenceStore();
+        IPreferenceStore preferences = Activator.getDefault()
+                .getPreferenceStore();
         IPreferenceStore settings = ProjectPrefenceHelper.getStore(project);
 
         String compiler = ProjectPrefenceHelper.getCompiler(settings);
         if (compiler == null || (compiler.trim().isEmpty()))
-            compiler = preferences.getString(Constants.PREFERENCES_COMPILER_NAME);
+            compiler = preferences
+                    .getString(Constants.PREFERENCES_COMPILER_NAME);
 
         if ((compiler == null) || (compiler.trim().isEmpty()))
             return null;
-        
+
         compiler = compiler.trim();
         File f = new File(compiler);
         if (!f.exists() || !f.canRead())
             return null;
-        
+
         String buildDir = ProjectPrefenceHelper.getBuildDir(settings);
         if (buildDir == null || buildDir.trim().isEmpty()) {
             return null;
         }
-        
+
         var input = ProjectPrefenceHelper.getInput(settings);
         if (input == null || input.trim().isEmpty()) {
             return null;
         }
-        
+
         var output = ProjectPrefenceHelper.getOutput(settings);
         if (output == null || output.trim().isEmpty()) {
             return null;
         }
-        
+
         // $tmpx -i $source -l $target/$program.lst -o $target/$program.prg
         var cmdArray = new ArrayList<String>();
         cmdArray.add(compiler);
-        
+
         cmdArray.add("-i");
         cmdArray.add(input);
 
         var listFile = ProjectPrefenceHelper.getListFile(settings);
         if (!listFile.trim().isEmpty()) {
-            var list = makeAbsolute(project, buildDir, listFile);       
+            var list = makeAbsolute(project, buildDir, listFile);
             cmdArray.add("-l");
-            cmdArray.add(list);            
+            cmdArray.add(list);
         }
-                
+
         cmdArray.add("-o");
-        var target = makeAbsolute(project, buildDir, output);       
+        var target = makeAbsolute(project, buildDir, output);
         cmdArray.add(makeAbsolute(project, target));
-        
+
         var options = ProjectPrefenceHelper.getOptions(settings).trim();
         if (!options.isEmpty()) {
             cmdArray.add(options);
         }
-        
+
         return cmdArray.toArray(new String[0]);
     }
-
 
     /**
      * Class for visiting all resources when a incremental build is initiated.
@@ -252,22 +262,23 @@ public class TmpBuilder extends IncrementalProjectBuilder {
     private class MyIncrementalBuildVisitor implements IResourceDeltaVisitor {
 
         boolean hasChanged;
-        
+
         public boolean visit(IResourceDelta delta) throws CoreException {
             int deltaKind = delta.getKind();
 
-            if ((deltaKind == IResourceDelta.ADDED) || (deltaKind == IResourceDelta.CHANGED)) {
+            if ((deltaKind == IResourceDelta.ADDED)
+                    || (deltaKind == IResourceDelta.CHANGED)) {
                 IResource resource = delta.getResource();
                 int resourceType = resource.getType();
 
                 if (resourceType == IResource.FILE) {
                     hasChanged = true;
-                   return false;
+                    return false;
                 } else if (resourceType == IResource.PROJECT) {
                     return resource.getProject().hasNature(Constants.NATURE_ID);
                 } else if (resourceType == IResource.FOLDER) {
                     return true;
-                } 
+                }
             }
 
             return false;
