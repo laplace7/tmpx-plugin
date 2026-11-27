@@ -4,35 +4,35 @@
    <extension
          point="org.eclipse.ui.editors">
       <editor
-            class="at.laplace.tmpxplugin.editor.ASMEditor"
+            class="at.laplace.tmpxplugin.ui.editor.ASMEditor"
             contributorClass="org.eclipse.ui.editors.text.TextEditorActionContributor"
             default="true"
             extensions="asm, inc, s, sym"
             icon="icons/16/asm.gif"
             id="TMPxPlugin.editor1"
             name="%editor.name">
-              <contentTypeBinding contentTypeId="at.laplace.tmpxplugin.asm.contenttypeMod" />
+              <contentTypeBinding contentTypeId="at.laplace.tmpxplugin.asm.contenttype" />
             </editor>
    </extension>
    <extension
          point="org.eclipse.ui.preferencePages">
       <page
-            class="at.laplace.tmpxplugin.ui.PreferencesGeneral"
+            class="at.laplace.tmpxplugin.ui.preferences.PreferencesGeneral"
             id="at.laplace.tmpxplugin.preferences.general"
             name="%preferences.general.name"/>
       <page
             category="at.laplace.tmpxplugin.preferences.general"
-            class="at.laplace.tmpxplugin.ui.PreferencesCompiler"
+            class="at.laplace.tmpxplugin.ui.preferences.PreferencesCompiler"
             id="at.laplace.tmpxplugin.preferences.compiler"
             name="%preferences.compiler.name"/>
       <page
             category="at.laplace.tmpxplugin.preferences.general"
-            class="at.laplace.tmpxplugin.ui.PreferencesDebugger"
+            class="at.laplace.tmpxplugin.ui.preferences.PreferencesDebugger"
             id="at.laplace.tmpxplugin.preferences.debugger"
             name="%preferences.debugger.name"/>
 	   <page
             category="at.laplace.tmpxplugin.preferences.general"
-            class="at.laplace.tmpxplugin.ui.PreferencesTemplates"
+            class="at.laplace.tmpxplugin.ui.preferences.PreferencesTemplates"
             id="at.laplace.tmpxplugin.preferences.templates"
             name="%preferences.templates.name"/>
    </extension>
@@ -65,7 +65,7 @@
    		 point="org.eclipse.ui.newWizards">
       <wizard
             category="at.laplace.tmpxplugin.new.category"
-            class="at.laplace.tmpxplugin.ui.WizardNewProject"
+            class="at.laplace.tmpxplugin.ui.wizard.WizardNewProject"
             hasPages="true"
             icon="icons/16/new_asm_project.gif"
             id="at.laplace.tmpxplugin.new.project"
@@ -78,7 +78,7 @@
       <wizard
             canFinishEarly="true"
             category="at.laplace.tmpxplugin.new.category"
-            class="at.laplace.tmpxplugin.ui.WizardNewFile"
+            class="at.laplace.tmpxplugin.ui.wizard.WizardNewFile"
             hasPages="true"
             icon="icons/16/new_asm_file.gif"
             id="at.laplace.tmpxplugin.new.file"
@@ -99,7 +99,7 @@
             label="%actionset.asmhelper"
             visible="true">
          <action
-               class="at.laplace.tmpxplugin.ui.AsciiAction"
+               class="at.laplace.tmpxplugin.ui.actions.AsciiAction"
                disabledIcon="icons/16/ascii_on.gif"
                hoverIcon="icons/16/ascii_on.gif"
                icon="icons/16/ascii_on.gif"
@@ -153,7 +153,7 @@
    <extension
          point="org.eclipse.debug.ui.launchShortcuts">
       <shortcut
-            class="at.laplace.tmpxplugin.launch.ASMLaunchShortcut"
+            class="at.laplace.tmpxplugin.ui.launch.ASMLaunchShortcut"
             icon="icons/16/launch.gif"
             id="at.laplace.tmpxplugin.shortcut"
             label="%launcher.name"
@@ -183,7 +183,7 @@
    <extension
          point="org.eclipse.debug.core.launchConfigurationTypes">
       <launchConfigurationType
-            delegate="at.laplace.tmpxplugin.launch.ASMLauncher"
+            delegate="at.laplace.tmpxplugin.ui.launch.ASMLauncher"
             id="at.laplace.tmpxplugin.launch"
             modes="run, debug"
             name="%launcher.config.name"
@@ -192,7 +192,7 @@
    <extension
          point="org.eclipse.debug.ui.launchConfigurationTabGroups">
       <launchConfigurationTabGroup
-            class="at.laplace.tmpxplugin.launch.ASMLaunchTabGroup"
+            class="at.laplace.tmpxplugin.ui.launch.ASMLaunchTabGroup"
             id="at.laplace.tmpxplugin.launch.tabs"
             type="at.laplace.tmpxplugin.launch"/>
    </extension>
@@ -223,7 +223,7 @@
             </separator>
          </menu>
          <action
-               class="at.laplace.tmpxplugin.popup.actions.BuildpathAction"
+               class="at.laplace.tmpxplugin.ui.actions.BuildpathAction"
                enablesFor="1"
                id="at.laplace.tmpxplugin.newAction"
                label="Open Properties"
@@ -252,7 +252,7 @@
          <page
             name="TMP Assembler"
             nameFilter="*"
-            class="at.laplace.tmpxplugin.ui.BuildPropertyPage"
+            class="at.laplace.tmpxplugin.ui.properties.BuildPropertyPage"
             id="at.laplace.tmpxplugin.buildPathPropertyPage">
       		 <enabledWhen>
       		 <and>
@@ -273,7 +273,7 @@
          id="at.laplace.tmpxplugin.asm.contentType"
          point="org.eclipse.core.contenttype.contentTypes">
       <content-type
-            id="at.laplace.tmpxplugin.asm.contenttypeMod"
+            id="at.laplace.tmpxplugin.asm.contenttype"
             file-extensions="asm,inc,sym,s"
             base-type="org.eclipse.core.runtime.text"
             name="Assembler File"

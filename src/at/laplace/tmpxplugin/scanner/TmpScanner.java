@@ -2,8 +2,8 @@ package at.laplace.tmpxplugin.scanner;
 
 import org.eclipse.jface.text.rules.ICharacterScanner;
 
-import at.laplace.tmpxplugin.editor.ASMInstructionSet;
 import at.laplace.tmpxplugin.Activator;
+import at.laplace.tmpxplugin.ui.editor.ASMInstructionSet;
 
 public class TmpScanner<T> {
     

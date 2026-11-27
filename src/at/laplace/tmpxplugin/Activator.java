@@ -45,8 +45,8 @@ import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleEvent;
 import org.osgi.framework.BundleListener;
 
-import at.laplace.tmpxplugin.editor.ASMEditor;
 import at.laplace.tmpxplugin.ui.OutputConsole;
+import at.laplace.tmpxplugin.ui.editor.ASMEditor;
 
 
 /**

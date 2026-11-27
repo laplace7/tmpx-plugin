@@ -1,12 +1,12 @@
 package at.laplace.tests;
 
-import static at.laplace.tmpxplugin.editor.PrefixExtractor.extract;
+import static at.laplace.tmpxplugin.ui.editor.PrefixExtractor.extract;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import org.junit.jupiter.api.Test;
 
-import at.laplace.tmpxplugin.editor.PrefixExtractor.Prefix;
-import at.laplace.tmpxplugin.editor.PrefixExtractor.PrefixType;
+import at.laplace.tmpxplugin.ui.editor.PrefixExtractor.Prefix;
+import at.laplace.tmpxplugin.ui.editor.PrefixExtractor.PrefixType;
 
 class TestCompletion {
     

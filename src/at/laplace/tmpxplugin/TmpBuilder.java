@@ -21,7 +21,7 @@
  */
 package at.laplace.tmpxplugin;
 
-import static at.laplace.tmpxplugin.prefs.ProjectPrefenceHelper.makeAbsolute;
+import static at.laplace.tmpxplugin.ui.properties.ProjectPrefenceHelper.makeAbsolute;
 
 import java.io.File;
 import java.io.IOException;
@@ -44,7 +44,7 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.ui.statushandlers.StatusManager;
 
-import at.laplace.tmpxplugin.prefs.ProjectPrefenceHelper;
+import at.laplace.tmpxplugin.ui.properties.ProjectPrefenceHelper;
 
 /**
  * Builder for ASM-Files.
