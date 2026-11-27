@@ -146,8 +146,8 @@ public class TemplateFileWizardPage extends WizardPage {
 
     for (int i = 0; i < files.length; i++) {
       item = files[i].getName();
-      if (files[i].isFile() && item.toLowerCase().endsWith(".txt")) {
-        item = item.substring(0, item.length() - 4);
+      if (files[i].isFile() && item.toLowerCase().endsWith(".asm")) {
+        item = item.substring(0, item.length() - 4).replace('_', ' ');
         templateFileList.add(new TemplateFileItem(item, files[i]));
       }
     }

@@ -248,11 +248,7 @@ public class Activator extends AbstractUIPlugin implements BundleListener {
 		store.setDefault(Constants.PREFERENCES_COMPILER_SYMBOLS, true);
 		store.setDefault(Constants.PREFERENCES_COMPILER_VICESYMBOLS, true);
 
-		store.setDefault(Constants.PROPERTY_TEMPLATES,
-				"<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
-						+ "<templates>"
-						+ "<template autoinsert=\"true\" context=\"asm.editor.context\" deleted=\"false\" description=\"Basic Upstart.\" enabled=\"true\" name=\"BasicUpstart\">.pc = $$0801 \"Basic Upstart\"&#10;:BasicUpstart(start)&#10;.pc = $$0810 \"Program\"&#10;start:&#10;</template>"
-						+ "</templates>");
+		store.setDefault(Constants.PROPERTY_TEMPLATES, Templates.DEFAULT);
 
 		store.setDefault(Constants.PREFERENCES_COMPILER_PARAMS, "");
 		store.setDefault(Constants.PREFERENCES_LINKER_NAME, "");
