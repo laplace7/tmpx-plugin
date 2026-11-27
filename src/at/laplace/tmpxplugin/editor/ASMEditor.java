@@ -235,9 +235,9 @@ public class ASMEditor extends TextEditor {
         // ensure decoration support has been created and configured.
         getSourceViewerDecorationSupport(viewer);
 
-        viewer.setDefaultPrefixes(new String[] { ";" },
+        viewer.setDefaultPrefixes(new String[] { Constants.LINE_COMMENT_PREFIX },
                 IDocument.DEFAULT_CONTENT_TYPE);
-        viewer.setDefaultPrefixes(new String[] { ";" },
+        viewer.setDefaultPrefixes(new String[] { Constants.LINE_COMMENT_PREFIX},
                 Constants.PARTITION_COMMENT_SINGLE);
         return viewer;
     }

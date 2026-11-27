@@ -109,9 +109,9 @@ public class Activator extends AbstractUIPlugin implements BundleListener {
 		
 	}
 
-	public void bundleChanged(BundleEvent arg0) {
+	public void bundleChanged(BundleEvent event) {
 
-		if (arg0.getType() == BundleEvent.STARTED ){
+		if (event.getType() == BundleEvent.STARTED ){
 
 			boolean run = false;
 			synchronized (this) {
@@ -189,18 +189,18 @@ public class Activator extends AbstractUIPlugin implements BundleListener {
 	}
 
 	/**
-	 * Returns the absolut path of a entrie from the plugin's directory.
+	 * Returns the absolute path of a entry from the plugin's directory.
 	 * 
-	 * @param entrie a file or directory (don't use "dir1\dir2" or "dir1\file1")
+	 * @param entry a file or directory (don't use "dir1\dir2" or "dir1\file1")
 	 * 
 	 * @return Returns the path from the plugin.
 	 */
-	public static String getFilePathFromPlugin(String entrie) {
+	public static String getFilePathFromPlugin(String entry) {
 		URL url = null;
 		IPath path = null;
 		String result = "";
 
-		Enumeration<URL> enu = Activator.getDefault().getBundle().findEntries("/", entrie, true);
+		Enumeration<URL> enu = Activator.getDefault().getBundle().findEntries("/", entry, true);
 		if (enu.hasMoreElements()) {
 			url = (URL) enu.nextElement();
 		}

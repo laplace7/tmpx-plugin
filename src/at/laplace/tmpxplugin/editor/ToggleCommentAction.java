@@ -18,7 +18,7 @@
  You should have received a copy of the GNU General Public License
  along with this program; if not, write to the Free Software
  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-*/ 
+*/
 package at.laplace.tmpxplugin.editor;
 
 import org.eclipse.core.runtime.Status;
@@ -34,7 +34,6 @@ import at.laplace.tmpxplugin.Activator;
 import at.laplace.tmpxplugin.Constants;
 import at.laplace.tmpxplugin.Messages;
 
-
 /**
  * Action to toggle a comment.
  * 
@@ -43,61 +42,65 @@ import at.laplace.tmpxplugin.Messages;
  */
 public class ToggleCommentAction extends Action {
 
-  /** Refer to SourceViewer */
-  private SourceViewer viewer;
+    /** Refer to SourceViewer */
+    private SourceViewer viewer;
 
-  /**
-   * The constructor.
-   * 
-   * @param viewer The SourceViewer for the corresponding ASM-Editor.
-   */
-  public ToggleCommentAction(SourceViewer viewer) {
-    this.viewer = viewer;
-  }
-
-  /**
-   * {@inheritDoc}
-   */
-  public void run() {
-    IDocument document = viewer.getDocument();
-    ISelection selection = viewer.getSelection();
-    TextSelection textSelection;
-    if (selection instanceof TextSelection) {
-      textSelection = (TextSelection) selection;
-      boolean isCommented = isCommented(document, textSelection);
-      if (isCommented) {
-        viewer.doOperation(ITextOperationTarget.STRIP_PREFIX);
-      } else {
-        viewer.doOperation(ITextOperationTarget.PREFIX);
-      }
+    /**
+     * The constructor.
+     * 
+     * @param viewer
+     *            The SourceViewer for the corresponding ASM-Editor.
+     */
+    public ToggleCommentAction(SourceViewer viewer) {
+        this.viewer = viewer;
     }
-  }
 
-  /**
-   * Check, if the selection in the given document is commented.
-   * 
-   * @param document The document.
-   * @param selection The selection.
-   * 
-   * @return true, if commented. Otherwise false.
-   */
-  private boolean isCommented(IDocument document, TextSelection selection) {
-    try {
-      int startLine = selection.getStartLine();
-      int endLine = selection.getEndLine();
-      String firstChar;
-      for (int line = startLine; line <= endLine; line++) {
-        firstChar = document.get(document.getLineOffset(line), 2);
-        if (!firstChar.equals("//")) {
-          return false;
+    /**
+     * {@inheritDoc}
+     */
+    public void run() {
+        IDocument document = viewer.getDocument();
+        ISelection selection = viewer.getSelection();
+        TextSelection textSelection;
+        if (selection instanceof TextSelection) {
+            textSelection = (TextSelection) selection;
+            boolean isCommented = isCommented(document, textSelection);
+            if (isCommented) {
+                viewer.doOperation(ITextOperationTarget.STRIP_PREFIX);
+            } else {
+                viewer.doOperation(ITextOperationTarget.PREFIX);
+            }
         }
-      }
-    } catch (BadLocationException e) {
-      Activator.getDefault().getLog().log(
-                                          new Status(Status.ERROR, Constants.PLUGIN_ID, Status.OK,
-                                                     Messages.BADLOCATION_ERROR, e));
     }
 
-    return true;
-  }
+    /**
+     * Check, if the selection in the given document is commented.
+     * 
+     * @param document
+     *            The document.
+     * @param selection
+     *            The selection.
+     * 
+     * @return true, if commented. Otherwise false.
+     */
+    private boolean isCommented(IDocument document, TextSelection selection) {
+        try {
+            int startLine = selection.getStartLine();
+            int endLine = selection.getEndLine();
+            for (int line = startLine; line <= endLine; line++) {
+                var region = document.getLineInformation(line);
+                var text = document.get(region.getOffset(), region.getLength());
+
+                if (!text.stripLeading().startsWith(Constants.LINE_COMMENT_PREFIX)) {
+                    return false;
+                }
+            }
+        } catch (BadLocationException e) {
+            Activator.getDefault().getLog()
+                    .log(new Status(Status.ERROR, Constants.PLUGIN_ID,
+                            Status.OK, Messages.BADLOCATION_ERROR, e));
+        }
+
+        return true;
+    }
 }

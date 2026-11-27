@@ -44,15 +44,11 @@ import org.eclipse.jface.text.contentassist.IContextInformation;
 import org.eclipse.jface.text.contentassist.IContextInformationValidator;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Display;
-import org.eclipse.ui.IEditorInput;
-import org.eclipse.ui.IEditorPart;
-import org.eclipse.ui.IFileEditorInput;
-import org.eclipse.ui.IWorkbenchPage;
-import org.eclipse.ui.IWorkbenchWindow;
-import org.eclipse.ui.PlatformUI;
 
 import at.laplace.tmpxplugin.Activator;
 import at.laplace.tmpxplugin.Constants;
+import at.laplace.tmpxplugin.editor.PrefixExtractor.Prefix;
+import at.laplace.tmpxplugin.editor.PrefixExtractor.PrefixType;
 
 /**
  * Class for content assist. Create the content assist list.
@@ -66,8 +62,8 @@ public class ASMCompletionProcessor implements IContentAssistProcessor {
     private static Image macroImage;
     private static Image defaultImage;
     private static Image procedureImage;
-    private static List<String> kickassKeywords;
-    private static List<String> asminstructions;
+    private static List<String> directives;
+    private static List<String> instructions;
 
     static {
         labelImage = new Image(Display.getCurrent(),
@@ -78,37 +74,20 @@ public class ASMCompletionProcessor implements IContentAssistProcessor {
                 Activator.getFilePathFromPlugin("tree_default.gif"));
         procedureImage = new Image(Display.getCurrent(),
                 Activator.getFilePathFromPlugin("tree_procedure.gif"));
-        kickassKeywords = new ArrayList<String>();
+        directives = new ArrayList<String>();
         for (String key : ASMInstructionSet.getDirectives().keySet()) {
-            kickassKeywords.add(key.substring(1) + " ");
+            directives.add(key.substring(1) + " ");
         }
-        asminstructions = new ArrayList<String>();
+        instructions = new ArrayList<String>();
         for (String key : ASMInstructionSet.getInstructions().keySet()) {
-            asminstructions.add(key + " ");
+            instructions.add(key + " ");
         }
     }
 
-    private ASMEditor editor;
+    private final ASMEditor editor;
 
     public ASMCompletionProcessor(ASMEditor editor) {
         this.editor = editor;
-    }
-
-    private static IFile getCurrentIFile() {
-        IWorkbenchWindow win = PlatformUI.getWorkbench()
-                .getActiveWorkbenchWindow();
-
-        IWorkbenchPage page = win.getActivePage();
-        if (page != null) {
-            IEditorPart editor = page.getActiveEditor();
-            if (editor != null) {
-                IEditorInput input = editor.getEditorInput();
-                if (input instanceof IFileEditorInput) {
-                    return ((IFileEditorInput) input).getFile();
-                }
-            }
-        }
-        return null;
     }
 
     /**
@@ -127,7 +106,7 @@ public class ASMCompletionProcessor implements IContentAssistProcessor {
 
         Prefix prefixType = getPrefix(viewer, selectionOffset);
 
-        String prefix = prefixType.prefix;
+        String prefix = prefixType.prefix();
 
         Region region = new Region(selectionOffset - prefix.length(),
                 prefix.length() + selection.getLength());
@@ -157,29 +136,29 @@ public class ASMCompletionProcessor implements IContentAssistProcessor {
         ArrayList<ICompletionProposal> proposalList = new ArrayList<ICompletionProposal>();
 
         int offset = region.getOffset();
-        String smprefix = prefixType.prefix.toLowerCase();
+        String smprefix = prefixType.prefix().toLowerCase();
 
         ASMContentOutlinePage outline = editor != null ? editor.getOutline()
                 : null;
         /* Add things from outline, which is constantly updated */
-        if (prefixType.type != PrefixType.KickAssKeyword && outline != null) {
+        if (prefixType.type() != PrefixType.DIRECTIVE && outline != null) {
             addToProposalList(region, proposalList, offset, smprefix,
                     outline.getLabels(), null, labelImage);
         }
 
-        if (prefixType.type == PrefixType.Unknown) {
+        if (prefixType.type() == PrefixType.UNKNOWN) {
             if (outline != null) {
                 List<String> macros = new ArrayList<String>();
                 List<String> tempMacros = outline.getMacros();
                 for (String m : tempMacros)
-                    macros.add(":" + m);
+                    macros.add(m); // TODO prefix "#" required?
 
                 addToProposalList(region, proposalList, offset, smprefix,
                         macros, null, macroImage);
             }
 
             addToProposalList(region, proposalList, offset, smprefix,
-                    asminstructions, null, defaultImage);
+                    instructions, null, defaultImage);
 
             if (outline != null) {
                 addToProposalList(region, proposalList, offset, smprefix,
@@ -194,7 +173,8 @@ public class ASMCompletionProcessor implements IContentAssistProcessor {
             addToProposalList(region, proposalList, offset, smprefix,
                     ASMInstructionSet.getBlocks().keySet(), null, defaultImage);
 
-            IFile currentIFile = getCurrentIFile();
+            var input = editor.getEditorInput();
+            var currentIFile = input.getAdapter(IFile.class);            
             if (currentIFile == null)
                 return null;
 
@@ -203,9 +183,9 @@ public class ASMCompletionProcessor implements IContentAssistProcessor {
             addDependencyItems(region, proposalList, offset, smprefix,
                     prefixType, currentIFile, project, new HashSet<String>());
 
-        } else if (prefixType.type == PrefixType.KickAssKeyword) {
+        } else if (prefixType.type() == PrefixType.DIRECTIVE) {
             addToProposalList(region, proposalList, offset, smprefix,
-                    kickassKeywords, null, defaultImage);
+                    directives, null, defaultImage);
 
         }
 
@@ -259,31 +239,32 @@ public class ASMCompletionProcessor implements IContentAssistProcessor {
             String smprefix, Prefix prefixType, IFile file) {
 
         try {
+            var source = file.getName();
             @SuppressWarnings("unchecked")
             List<String> labels = (List<String>) file
                     .getSessionProperty(Constants.LABELS_SESSION_KEY);
             addToProposalList(region, proposalList, offset, smprefix, labels,
-                    " [" + file.getName() + "]", labelImage);
+                    source, labelImage);
 
-            if (prefixType.type == PrefixType.Label)
+            if (prefixType.type() == PrefixType.LABEL)
                 return;
             @SuppressWarnings("unchecked")
             List<String> macros = (List<String>) file
                     .getSessionProperty(Constants.MACROS_SESSION_KEY);
             addToProposalList(region, proposalList, offset, smprefix, macros,
-                    " [" + file.getName() + "]", macroImage);
+                    source, macroImage);
 
             @SuppressWarnings("unchecked")
             List<String> constig = (List<String>) file
                     .getSessionProperty(Constants.CONST_SESSION_KEY);
             addToProposalList(region, proposalList, offset, smprefix, constig,
-                    " [" + file.getName() + "]", defaultImage);
+                    source, defaultImage);
 
             @SuppressWarnings("unchecked")
             List<String> functions = (List<String>) file
                     .getSessionProperty(Constants.FUNCTIONS_SESSION_KEY);
             addToProposalList(region, proposalList, offset, smprefix, functions,
-                    " [" + file.getName() + "]", procedureImage);
+                    source, procedureImage);
 
         } catch (CoreException e) {
             e.printStackTrace();
@@ -293,7 +274,7 @@ public class ASMCompletionProcessor implements IContentAssistProcessor {
 
     protected void addToProposalList(Region region,
             ArrayList<ICompletionProposal> proposalList, int offset,
-            String smprefix, Collection<String> labels, String key,
+            String smprefix, Collection<String> labels, String source,
             Image image) {
 
         if (labels == null)
@@ -308,15 +289,18 @@ public class ASMCompletionProcessor implements IContentAssistProcessor {
                     cursorpos = label.length();
                 }
 
+                var displayString = source == null 
+                        ? label 
+                        : "%s [%s]".formatted(label, source);
                 proposalList.add(new CompletionProposal(label, offset,
                         region.getLength(), cursorpos, image,
-                        label + (key == null ? "" : key), null, null));
+                        displayString, null, null));
             }
         }
     }
 
     /**
-     * Resturn the prefix.
+     * Returns the prefix.
      * 
      * @param viewer
      *            The viewer.
@@ -326,62 +310,15 @@ public class ASMCompletionProcessor implements IContentAssistProcessor {
      * @return The prefix.
      */
     private Prefix getPrefix(ITextViewer viewer, int offset) {
-        int i = offset;
-        IDocument document = viewer.getDocument();
-
-        Prefix prefix = new Prefix();
-        prefix.prefix = "";
-        prefix.type = PrefixType.Unknown;
-
-        if (i > document.getLength()) {
-            return prefix;
-        }
-
-        int maxLevel = 2;
         try {
-            while (i > 0) {
-                char ch = document.getChar(i - 1);
-
-                if (ch <= ' ' || ch == '<' || ch == '>' || ch == '#'
-                        || ch == '!' || ch == '(' || ch == '[' || ch == '\t'
-                        || ch == '&' || ch == '|' || ch == '+' || ch == '-'
-                        || ch == '*' || ch == '/' || ch == '^') {
-                    break;
-                }
-
-                if (i > 1 && ch == '.'
-                        && Character.isLetterOrDigit(document.getChar(i - 2))) {
-
-                    prefix.type = PrefixType.Label;
-                    break;
-                }
-                if (ch == '.') {
-                    prefix.type = PrefixType.KickAssKeyword;
-                    break;
-                }
-                i--;
-                maxLevel--;
-                if (maxLevel == 0) {
-                    break;
-                }
-            }
-
-            prefix.prefix = document.get(i, offset - i);
+            IDocument document = viewer.getDocument();        
+            var region = document.getLineInformationOfOffset(offset);
+            var line = document.get(region.getOffset(), region.getLength());
+            offset = offset - region.getOffset();            
+            return PrefixExtractor.extract(line, offset);            
         } catch (BadLocationException e) {
+            return new Prefix("", PrefixType.UNKNOWN);
         }
-
-        return prefix;
-    }
-
-    enum PrefixType {
-        Label, Unknown, KickAssKeyword
-    }
-
-    private final class Prefix {
-
-        String prefix = "";
-        PrefixType type = PrefixType.Unknown;
-
     }
 
     /**

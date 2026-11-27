@@ -120,16 +120,8 @@ public class SimpleExecutor {
 
 			Process p  = Runtime.getRuntime().exec(cmdLine, null, new File(destdir));
 			
-			IProcess eclipseProcess = DebugPlugin.newProcess(launch, p, "VICE x64sc", new HashMap<>());
+			IProcess eclipseProcess = DebugPlugin.newProcess(launch, p, "VICE", new HashMap<>());
 			launch.addProcess(eclipseProcess);
-
-//			Worker worker = new Worker(p);
-//			worker.start();
-//			
-//			if (wait){
-//				worker.join();
-//			}
-
 		} catch (Exception e) {
 			Activator.getDefault().getLog().log(
 					new Status(Status.ERROR, Constants.PLUGIN_ID, Status.OK,

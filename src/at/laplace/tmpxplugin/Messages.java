@@ -43,7 +43,7 @@ public class Messages extends NLS {
     public static String TEXTCOLOR_OPERATOR_NAME;
     public static String TEXTCOLOR_INSTRUCTION_BRANCH_NAME;
 	public static String TEXTCOLOR_CONSTANT_NAME;
-    public static String TEXTCOLOR_MACRO_NAME;
+    public static String TEXTCOLOR_MACRO_CALL_NAME;
 
 	/**
 	 * Name of the string text style.

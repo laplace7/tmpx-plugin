@@ -18,7 +18,7 @@
  You should have received a copy of the GNU General Public License
  along with this program; if not, write to the Free Software
  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-*/ 
+*/
 package at.laplace.tmpxplugin.editor;
 
 import java.util.ArrayList;
@@ -33,7 +33,6 @@ import org.eclipse.jface.text.rules.Token;
 
 import at.laplace.tmpxplugin.Constants;
 
-
 /**
  * A partition scanner for the ASM editor.
  * 
@@ -42,32 +41,33 @@ import at.laplace.tmpxplugin.Constants;
  */
 public class ASMPartitionScanner extends RuleBasedPartitionScanner {
 
-  /**
-   * Partition scanner for the ASMEditor.
-   */
-  public ASMPartitionScanner() {
-    IToken string = new Token(Constants.PARTITION_STRING);
-    IToken commentS = new Token(Constants.PARTITION_COMMENT_SINGLE);
+    /**
+     * Partition scanner for the ASMEditor.
+     */
+    public ASMPartitionScanner() {
+        IToken string = new Token(Constants.PARTITION_STRING);
+        IToken comments = new Token(Constants.PARTITION_COMMENT_SINGLE);
 
-    ArrayList<IRule> rules = new ArrayList<IRule>();
-    rules.add(new SingleLineRule("\"", "\"", string));
-    rules.add(new EndOfLineRule(";", commentS));
-    setPredicateRules(rules.toArray(new IPredicateRule[] {}));
-  }
-
-  /**
-   * Convert all characters to lower case, need for case insensitive
-   * MultiLineRule.
-   * 
-   * {@inheritDoc}
-   */
-  public int read() {
-    int c = super.read();
-
-    if (c != EOF) {
-      c = Character.toLowerCase((char) c);
+        ArrayList<IRule> rules = new ArrayList<IRule>();
+        rules.add(new SingleLineRule("\"", "\"", string));
+        rules.add(new EndOfLineRule(Constants.LINE_COMMENT_PREFIX, comments));
+        setPredicateRules(rules.toArray(new IPredicateRule[] {}));
     }
 
-    return c;
-  }
+    /**
+     * Convert all characters to lower case, need for case insensitive
+     * MultiLineRule.
+     * 
+     * {@inheritDoc}
+     */
+    public int read() {
+        int c = super.read();
+
+        if (c != EOF) {
+            c = Character.toLowerCase((char) c);
+        }
+
+        return c;
+    }
+    
 }

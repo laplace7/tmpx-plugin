@@ -78,7 +78,7 @@ public class Constants {
     public static final String PREFERENCES_TEXTCOLOR_DIRECTIVE_BLOCK = "preferences.textcolor.directive.block"; //$NON-NLS-1$
 	public static final String PREFERENCES_TEXTCOLOR_CONSTANT = "preferences.textcolor.constant";
 	public static final String PREFERENCES_TEXTCOLOR_STRING = "preferences.textcolor.string"; //$NON-NLS-1$
-    public static final String PREFERENCES_TEXTCOLOR_MACRO = "preferences.textcolor.macro"; //$NON-NLS-1$
+    public static final String PREFERENCES_TEXTCOLOR_MACRO_CALL = "preferences.textcolor.macro.call"; //$NON-NLS-1$
 	public static final String PREFERENCES_TEXTCOLOR_OPERATOR = "preferences.textcolor.operator"; //$NON-NLS-1$
     public static final String PREFERENCES_TEXTCOLOR_COMMENT = "preferences.textcolor.comment"; //$NON-NLS-1$
 
@@ -276,12 +276,14 @@ public class Constants {
 	public static final String PROJECT_PREFS_LIBDIR_DIRECTORY_KEY = "at.laplace.tmpxplugin.project.libdir";
     public static final String PROJECT_PREFS_LOCAL_CONF_KEY = "at.laplace.tmpxplugin.project.localconf";
 
-	public static final QualifiedName LABELS_SESSION_KEY = new QualifiedName("LABELS", "LABELS");
-	public static final QualifiedName MACROS_SESSION_KEY = new QualifiedName("MACROS", "MACROS");
-	public static final QualifiedName IMPORTS_SESSION_KEY = new QualifiedName("IMPORTS", "IMPORTS");
-	public static final QualifiedName CONST_SESSION_KEY = new QualifiedName("CONST",  "CONST");
-	public static final QualifiedName FUNCTIONS_SESSION_KEY = new QualifiedName("FUNCTIONS", "FUNCTIONS");
-
-	public static final QualifiedName NO_KICKASS_SCAN = new QualifiedName("NO_KICKASS_SCAN", "NO_KICKASS_SCAN");
+	public static final QualifiedName LABELS_SESSION_KEY = new QualifiedName(PLUGIN_ID, "LABELS");
+	public static final QualifiedName MACROS_SESSION_KEY = new QualifiedName(PLUGIN_ID, "MACROS");
+	public static final QualifiedName IMPORTS_SESSION_KEY = new QualifiedName(PLUGIN_ID, "IMPORTS");
+	public static final QualifiedName CONST_SESSION_KEY = new QualifiedName(PLUGIN_ID,  "CONST");
+	public static final QualifiedName FUNCTIONS_SESSION_KEY = new QualifiedName(PLUGIN_ID, "FUNCTIONS");
+	
+	public static final String NO_FOLDER_SCAN = ".no_tmpx_scan";
+	
+	public static final String LINE_COMMENT_PREFIX = ";";
 
 }

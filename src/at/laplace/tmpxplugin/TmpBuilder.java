@@ -31,6 +31,7 @@ import java.util.ArrayList;
 import java.util.Map;
 
 import org.eclipse.core.resources.IFolder;
+import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceDelta;
@@ -181,9 +182,9 @@ public class TmpBuilder extends IncrementalProjectBuilder {
 
         String cmdLine[] = createCommandLine(project);
         if (cmdLine == null) {
-            throw new CoreException(new Status(Status.ERROR,
-                    Constants.PLUGIN_ID,
-                    "Could not compile. Please make sure that you have set the path to Kickass.jar in the Preferences"));
+            Problems.deleteMarkers(project);
+            Problems.createMarker(project, Messages.LAUNCH_CONFIG_ERROR, -1, -1, -1, IMarker.SEVERITY_ERROR);
+            return;
         }
 
         var cwd = makeAbsolute(project, ProjectPrefenceHelper.getCwd(settings));

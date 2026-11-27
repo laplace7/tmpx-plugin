@@ -21,21 +21,19 @@
  */ 
 package at.laplace.tmpxplugin.editor;
 
-import java.util.ArrayList;
-
 import org.eclipse.jface.preference.IPreferenceStore;
-import org.eclipse.jface.text.rules.ICharacterScanner;
 import org.eclipse.jface.text.rules.IRule;
 import org.eclipse.jface.text.rules.IToken;
 import org.eclipse.jface.text.rules.RuleBasedScanner;
 import org.eclipse.jface.text.rules.Token;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
-import org.eclipse.swt.graphics.Device;
 
 import at.laplace.tmpxplugin.Activator;
 import at.laplace.tmpxplugin.Constants;
 import at.laplace.tmpxplugin.TextAttributeConverter;
+import at.laplace.tmpxplugin.scanner.ITokenFactory;
+import at.laplace.tmpxplugin.scanner.TmpScanner;
 
 
 /**
@@ -44,7 +42,7 @@ import at.laplace.tmpxplugin.TextAttributeConverter;
  * @author Andy Reek
  * @since 15.11.2005
  */
-public class ASMCodeScanner extends RuleBasedScanner implements IPropertyChangeListener {
+public class ASMCodeScanner extends RuleBasedScanner implements IPropertyChangeListener, ITokenFactory<IToken> {
 
     private final ASMEditor editor;
 
@@ -54,7 +52,7 @@ public class ASMCodeScanner extends RuleBasedScanner implements IPropertyChangeL
 	private Token directiveToken;
 	private Token constantToken;
     private Token stringToken;
-    private Token macroToken;
+    private Token macroCallToken;
     private Token operatorToken;
     private Token directiveBlockToken;
     private Token directiveBranchToken;
@@ -67,282 +65,24 @@ public class ASMCodeScanner extends RuleBasedScanner implements IPropertyChangeL
 	 */
 	public ASMCodeScanner(final ASMEditor editor) {
 		this.editor = editor;
-		ArrayList<IRule> rules = new ArrayList<IRule>();
-		createTokens(editor.getSite().getShell().getDisplay());
+		
+		createTokens();
 
 		Activator.getDefault().getPreferenceStore().addPropertyChangeListener(this);
 		
-		rules.add(new TmpxScanner());
-		setRules(rules.toArray(new IRule[] {}));
+		var rule = new TmpScannerRule(this);
+		setRules(new IRule[] { rule });
 	}
 		
-	private class TmpxScanner implements IRule {
+	public static class TmpScannerRule extends TmpScanner<IToken> implements IRule {
 	    
-	    private final StringBuilder builder;
-	    private int startColumn;
-	    private ICharacterScanner scanner;
-	    // Two Issue: 
-	    // - dot is the or-operator, or can be the start of a directive (.if).
-	    // - hash (#) can start a macro expansion (#macro), or are can be the prefix of an argument (lda #10)
-	    // 
-	    private boolean allowArguments;
-	    
-	    public TmpxScanner() {
-	        builder = new StringBuilder();
-	    }
-        
-        private int read() {
-            return scanner.read();
+        public TmpScannerRule(ITokenFactory<IToken> factory) {
+            super(factory);
         }
 	    
-	    private IToken token(IToken token) {
-	        // Keep comment for debugging
-	        // Activator.getConsole().println("[%d] Token: '%s'".formatted(startColumn,  builder.toString()));
-	        return token;
-	    }
-	    
-	    @Override
-	    public IToken evaluate(ICharacterScanner scanner) {
-	        this.scanner = scanner;
-	        reset();
-	        startColumn = scanner.getColumn();
-	        if (startColumn == 0) {
-	            allowArguments = false;
-	        }
-            // Keep comment for debugging
-            // Activator.getConsole().println("[%d] evaluate".formatted(startColumn));
-	        
-	        int c = read();
-	        if (Character.isWhitespace(c)) {
-	            return token(Token.WHITESPACE);
-	        }
-	        
-	        if (c == ';') {
-	            append(c);
-	            return scanComment();
-	        }
-	        
-	        if (!allowArguments) {
-	            // first try to detect macro-call, instructions and directives
-	            if (c == '#') {
-	                append(c);
-	                return scanMacroCall();
-	            }
-	            
-	            if (isWordStart(c)) {
-	                append(c);
-	                return scanWord();
-	            }
-	        }
-	        
-	        if (c == '"') {
-	            append(c);
-	            return scanString();
-	        }
-	        
-	        if (c == '$') {
-                append(c);
-	            return scanHexNumber();
-	        }
-	        
-	        if (c == '%') {
-                append(c);
-	            return scanBinaryNumber();
-	        }
-	        
-	        if (c == '\\') {
-                append(c);
-	            return scanMacroParameter();
-	        }
-	        
-	        if (isDigit(c)) {
-                append(c);
-	            return scanNumber();
-	        }
-	        
-	        if (isOperator(c)) {
-	            append(c);
-	            return scanOperator();
-	        }
-            
-            if (isWordStart(c)) {
-                append(c);
-                return scanWord();
-            }
-	        	        
-	        scanner.unread();
-	        return Token.UNDEFINED;
-	    }
-	    
-	    private void reset() {
-	        builder.setLength(0);
-	    }
-	    
-	    private void append(int c) {
-	        builder.append((char) c);
-	    }
-	    
-	    IToken scanComment() {
-	        while (true) {
-	            int c = read();
-	            if (c == '\r' || c == '\n' || c == ICharacterScanner.EOF) {
-	                scanner.unread();
-	                break;
-	            }
-	            append(c);
-	        }
-	        return token(commentToken);
-	    }
-        
-        IToken scanString() {
-            while (true) {
-                // tmpx does not have escape sequences that need special handling:
-                // Examples: {pound}, {127}, {$20}
-                int c = read();
-                if (c == '\r' || c == '\n' || c == ICharacterScanner.EOF) {
-                    // unterminated string!
-                    scanner.unread();
-                    break;
-                }
-                if (c == '\"') {
-                    // terminated string
-                    append(c);
-                    break;
-                }
-                append(c);
-            }
-            return token(stringToken);
-        }
-        
-        IToken scanHexNumber() {
-            int c = read();
-            while (isHexDigit(c)) {
-                append(c);
-                c = read();
-            }
-            scanner.unread();
-            return token(constantToken);
-        }
-        
-        IToken scanBinaryNumber() {
-            int c = read();
-            while (isBinaryDigit(c)) {
-                append(c);
-                c = read();
-            }
-            scanner.unread();
-            return token(constantToken);
-        }
-        
-        IToken scanMacroParameter() {
-            int c = read();
-            while (isDigit(c)) {
-                append(c);
-                c = read();
-            }
-            scanner.unread();
-            return token(constantToken);
-        }
-        
-        IToken scanNumber() {
-            int c = read();
-            while (isDigit(c)) {
-                append(c);
-                c = read();
-            }
-            scanner.unread();
-            return token(constantToken);
-        }
-        
-        IToken scanOperator() {
-            return token(operatorToken);
-        }
-        
-        IToken scanMacroCall() {
-            allowArguments = true;
-            
-            int c = read();
-            while (isWordPart(c)) {
-                append(c);
-                c = read();
-            }
-            scanner.unread();
-            return token(macroToken);            
-        }
-        
-        IToken scanWord() {
-            int c = read();
-            while (isWordPart(c)) {
-                append(c);
-                c = read();
-            }
-            scanner.unread();
-            
-            var word = builder.toString();
-            if (isInstruction(word) || isDirective(word)) {
-                allowArguments = true;
-            }
-            return token(getTokenForWord(word));
-        }
-        
-        static boolean isDigit(int c) {
-            return '0' <= c && c <= '9';
-        }
-        
-        static boolean isBinaryDigit(int c) {
-            return '0' == c || '1' == c;
-        }
-        
-        static boolean isHexDigit(int c) {
-            if (isDigit(c)) {
-                return true;
-            }
-            return 'a' <= c && c <= 'f' || 'A' <= c && c >= 'F';
-        }
-        
-        static boolean isOperator(int c) {
-            return switch (c) {
-            case '#','<','>','+','-','*','/','&','.',':','(',')','=','!','{','}' -> true;
-            default -> false;
-            };
-        }
-        
-        static boolean isWordStart(int c) {
-            return c == '.' || c == '_' || 'a' <= c && c <= 'z' || 'A' <= c && c <= 'Z';
-        }
-        
-        static boolean isWordPart(int c) {
-            return isWordStart(c) || isDigit(c) || c == '@';            
-        }
-	    
-        Token getTokenForWord(String word) {
-            boolean instruction = isInstruction(word);
-            var kind = ASMInstructionSet.getKind().get(word);
-            switch (kind) {
-            case null: break;
-            case "block": return directiveBlockToken;
-            case "branch": return instruction ? instructionBranchToken : directiveBranchToken;
-            default: break;
-            }
-            
-            if (isInstruction(word)) {
-                return instructionToken;
-            }
-            if (isDirective(word)) {
-                return directiveToken;
-            }
-            return defaultToken;
-        }
-        
-        private boolean isInstruction(String word) {
-            return ASMInstructionSet.getInstructions().containsKey(word);
-        }
-        
-        private boolean isDirective(String word) {
-            return ASMInstructionSet.getDirectives().containsKey(word);
-        }
 	}
 	
+
 	/**
 	 * Disposes the PropertyChangeListener from the PreferenceStore.
 	 */
@@ -352,10 +92,8 @@ public class ASMCodeScanner extends RuleBasedScanner implements IPropertyChangeL
 
 	/**
 	 * Create all Tokens.
-	 * 
-	 * @param device The device is needed for the color of the Tokens.
 	 */
-	private void createTokens(Device device) {
+	private void createTokens() {
 		IPreferenceStore store = Activator.getDefault().getPreferenceStore();
 
 		defaultToken = getToken(store, Constants.PREFERENCES_TEXTCOLOR_DEFAULT); 
@@ -364,7 +102,7 @@ public class ASMCodeScanner extends RuleBasedScanner implements IPropertyChangeL
 		directiveToken = getToken(store, Constants.PREFERENCES_TEXTCOLOR_DIRECTIVE);
 		constantToken = getToken(store, Constants.PREFERENCES_TEXTCOLOR_CONSTANT);
 		stringToken = getToken(store, Constants.PREFERENCES_TEXTCOLOR_STRING);
-        macroToken = getToken(store, Constants.PREFERENCES_TEXTCOLOR_MACRO);
+        macroCallToken = getToken(store, Constants.PREFERENCES_TEXTCOLOR_MACRO_CALL);
         operatorToken = getToken(store, Constants.PREFERENCES_TEXTCOLOR_OPERATOR);
         directiveBlockToken = getToken(store, Constants.PREFERENCES_TEXTCOLOR_DIRECTIVE_BLOCK);
         directiveBranchToken = getToken(store, Constants.PREFERENCES_TEXTCOLOR_DIRECTIVE_BRANCH);
@@ -397,7 +135,7 @@ public class ASMCodeScanner extends RuleBasedScanner implements IPropertyChangeL
         case Constants.PREFERENCES_TEXTCOLOR_DIRECTIVE  -> directiveToken;
         case Constants.PREFERENCES_TEXTCOLOR_CONSTANT  -> constantToken;
         case Constants.PREFERENCES_TEXTCOLOR_STRING  -> stringToken;
-        case Constants.PREFERENCES_TEXTCOLOR_MACRO  -> macroToken;
+        case Constants.PREFERENCES_TEXTCOLOR_MACRO_CALL  -> macroCallToken;
         case Constants.PREFERENCES_TEXTCOLOR_OPERATOR  -> operatorToken;
         case Constants.PREFERENCES_TEXTCOLOR_DIRECTIVE_BLOCK  -> directiveBlockToken;
         case Constants.PREFERENCES_TEXTCOLOR_DIRECTIVE_BRANCH  -> directiveBranchToken;
@@ -405,5 +143,76 @@ public class ASMCodeScanner extends RuleBasedScanner implements IPropertyChangeL
 	    default -> null;
 	    };
 	}
+
+	// ITokenFactory
+	
+	@Override
+	public void setBuilder(StringBuilder builder) {
+	    // not needed here	    
+	}
+	
+	@Override
+	public IToken eol() {
+        return Token.UNDEFINED;
+	}
+	
+    @Override
+    public IToken undefined() {
+        return Token.UNDEFINED;
+    }
+
+    @Override
+    public IToken whitespace() {
+        return Token.WHITESPACE;
+    }
+
+    @Override
+    public IToken comment() {
+        return commentToken;
+    }
+
+    @Override
+    public IToken string() {
+        return stringToken;
+    }
+
+    @Override
+    public IToken constant() {
+        return constantToken;
+    }
+
+    @Override
+    public IToken operator() {
+        return operatorToken;
+    }
+
+    @Override
+    public IToken macroCall() {
+        return macroCallToken;
+    }
+
+    @Override
+    public IToken directive(String kind) {
+        return switch (kind) {
+        case null -> directiveToken;
+        case "block" -> directiveBlockToken;
+        case "branch" -> directiveBranchToken;  
+        default -> directiveToken;
+        };
+    }
+
+    @Override
+    public IToken instruction(String kind) {
+        return switch (kind) {
+        case null -> instructionToken;
+        case "branch" -> instructionBranchToken;
+        default -> instructionToken;
+        };
+    }
+
+    @Override
+    public IToken label() {
+        return defaultToken;
+    }
 
 }

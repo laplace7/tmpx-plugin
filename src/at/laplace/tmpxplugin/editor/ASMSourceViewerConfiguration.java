@@ -126,14 +126,15 @@ public class ASMSourceViewerConfiguration extends SourceViewerConfiguration {
   }
   
   @Override
-    public IAnnotationHover getAnnotationHover(ISourceViewer sourceViewer) {
-        return new DefaultAnnotationHover();
-    }
+  public IAnnotationHover getAnnotationHover(ISourceViewer sourceViewer) {
+      return new DefaultAnnotationHover();
+  }
+
   @Override
-    public ITextHover getTextHover(ISourceViewer sourceViewer,
-            String contentType) {
-        return new DefaultTextHover(sourceViewer);
-    }
+  public ITextHover getTextHover(ISourceViewer sourceViewer,
+          String contentType) {
+      return new DefaultTextHover(sourceViewer);
+  }
 
   /**
    * Remove all rule scanners from property change listener.
