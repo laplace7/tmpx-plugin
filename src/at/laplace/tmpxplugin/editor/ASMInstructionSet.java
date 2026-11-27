@@ -46,17 +46,16 @@ import at.laplace.tmpxplugin.Messages;
  */
 public final class ASMInstructionSet {
 
-    private static boolean loaded = false;
-
-    private static Map<String, String> instructionMap = null;
-
-    private static Map<String, String> directiveMap = null;
-
-    private static Map<String, String> blockMap = null;
-    
+    private static final Map<String, String> instructionMap = new TreeMap<>();
+    private static final Map<String, String> directiveMap = new TreeMap<>();
+    private static final Map<String, String> blockMap = new TreeMap<>();
     // shared by all entries
-    private static Map<String, String> kindMap = null;
+    private static final Map<String, String> kindMap = new HashMap<>();
 
+    static {
+        loadXMLData();
+    }
+    
     /**
      * Must not be instantiated.
      */
@@ -65,34 +64,18 @@ public final class ASMInstructionSet {
     }
 
     public static Map<String, String> getInstructions() {
-        if (!loaded) {
-            loadXMLData();
-        }
-
         return instructionMap;
     }
 
     public static Map<String, String> getDirectives() {
-        if (!loaded) {
-            loadXMLData();
-        }
-
         return directiveMap;
     }
 
     public static Map<String, String> getBlocks() {
-        if (!loaded) {
-            loadXMLData();
-        }
-
         return blockMap;
     }
     
     public static Map<String, String> getKind() {
-        if (!loaded) {
-            loadXMLData();
-        }
-        
         return kindMap;
     }
 
@@ -100,14 +83,6 @@ public final class ASMInstructionSet {
      * Loads the instructions.
      */
     private static void loadXMLData() {
-        
-        loaded = true;
-        
-        instructionMap = new TreeMap<>();
-        directiveMap = new TreeMap<>();
-        blockMap = new TreeMap<>();
-        kindMap = new HashMap<>();
-
         String xmlfile = Activator
                 .getFilePathFromPlugin("asm_instruction_set.xml");
 
