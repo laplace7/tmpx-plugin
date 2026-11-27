@@ -245,7 +245,7 @@ public class TmpScanner<T> {
         if (isDigit(c)) {
             return true;
         }
-        return 'a' <= c && c <= 'f' || 'A' <= c && c >= 'F';
+        return 'a' <= c && c <= 'f' || 'A' <= c && c <= 'F';
     }
     
     public static boolean isOperator(int c) {
