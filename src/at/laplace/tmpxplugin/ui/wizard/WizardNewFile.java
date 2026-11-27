@@ -21,13 +21,7 @@
 */ 
 package at.laplace.tmpxplugin.ui.wizard;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.InputStreamReader;
-
 import org.eclipse.core.resources.IFile;
-import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.Wizard;
@@ -41,7 +35,6 @@ import org.eclipse.ui.dialogs.WizardNewFileCreationPage;
 import org.eclipse.ui.ide.IDE;
 import org.eclipse.ui.texteditor.AbstractDecoratedTextEditor;
 
-import at.laplace.tmpxplugin.Activator;
 import at.laplace.tmpxplugin.Constants;
 import at.laplace.tmpxplugin.Messages;
 
@@ -106,61 +99,35 @@ public class WizardNewFile extends Wizard implements INewWizard {
    * {@inheritDoc}
    */
   public boolean performFinish() {
-    boolean template = page2.isTemplateFile();
-    File tfile = template ? page2.getSelectedFile() : null;
-    IFile file = page1.createNewFile();
+      boolean template = page2.isTemplateFile();
+      String content = template ? page2.getSelectedTemplateContent() : null;
+      IFile file = page1.createNewFile();
 
-    if (file == null) {
-      return false;
-    }
-
-    IEditorPart editpart = null;
-    IDE.setDefaultEditor(file, "ASMPlugin.editor1");
-
-    try {
-      IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
-      editpart = IDE.openEditor(page, file, true);
-    } catch (PartInitException ex) {
-      return false;
-    }
-
-    if ((editpart != null) && template && (tfile != null)) {
-      if (editpart instanceof AbstractDecoratedTextEditor) {
-        AbstractDecoratedTextEditor adedit = (AbstractDecoratedTextEditor) editpart;
-
-        if (adedit != null) {
-          IDocument doc = adedit.getDocumentProvider().getDocument(adedit.getEditorInput());
-
-          if (doc != null) {
-            String line;
-            StringBuffer text = new StringBuffer("");
-
-            try {
-              FileInputStream fis = new FileInputStream(tfile.getPath());
-              BufferedReader br = new BufferedReader(new InputStreamReader(fis));
-
-              while ((line = br.readLine()) != null) {
-                text.append(line);
-                if ((line.length() < 1) || ((line.length() > 0) && (line.charAt(line.length() - 1) != '\n'))) {
-                  text.append("\n");
-                }
-              }
-
-              fis.close();
-              br.close();
-            } catch (Exception e) {
-              Activator.getDefault().getLog().log(
-                                                  new Status(Status.ERROR, Constants.PLUGIN_ID, Status.OK,
-                                                             Messages.ASMCREATEFROMTEMP_ERROR, e));
-            }
-
-            doc.set(text.toString());
-          }
-        }
+      if (file == null) {
+          return false;
       }
-    }
 
-    return true;
+      IEditorPart editpart = null;
+      IDE.setDefaultEditor(file, Constants.EDITOR_ID);
+
+      try {
+          IWorkbenchPage page = PlatformUI.getWorkbench()
+                  .getActiveWorkbenchWindow().getActivePage();
+          editpart = IDE.openEditor(page, file, true);
+      } catch (PartInitException ex) {
+          return false;
+      }
+
+      if (editpart != null && template && content != null
+              && editpart instanceof AbstractDecoratedTextEditor editor) {
+          IDocument doc = editor.getDocumentProvider()
+                  .getDocument(editor.getEditorInput());
+          if (doc != null) {
+              doc.set(content);
+          }
+      }
+
+      return true;
   }
 
   /**

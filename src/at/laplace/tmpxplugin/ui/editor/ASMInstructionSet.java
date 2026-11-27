@@ -83,12 +83,9 @@ public final class ASMInstructionSet {
      * Loads the instructions.
      */
     private static void loadXMLData() {
-        String xmlfile = Activator
-                .getFilePathFromPlugin("asm_instruction_set.xml");
-
-        try {
+        try (var stream = Activator.class.getClassLoader().getResourceAsStream("asm_instruction_set.xml")){
             SAXParser parser = SAXParserFactory.newInstance().newSAXParser();
-            parser.parse(new File(xmlfile), new DefaultHandler() {
+            parser.parse(stream, new DefaultHandler() {
                 public void startElement(String uri, String localName,
                         String qName, Attributes attributes)
                         throws SAXException {

@@ -9,7 +9,7 @@
             default="true"
             extensions="asm, inc, s, sym"
             icon="icons/16/asm.gif"
-            id="TMPxPlugin.editor1"
+            id="at.laplace.tempxplugin.AsmEditor"
             name="%editor.name">
               <contentTypeBinding contentTypeId="at.laplace.tmpxplugin.asm.contenttype" />
             </editor>

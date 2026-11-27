@@ -22,6 +22,8 @@
 package at.laplace.tmpxplugin.ui.wizard;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -52,6 +54,15 @@ import at.laplace.tmpxplugin.Messages;
  * @since 13.02.2006
  */
 public class TemplateFileWizardPage extends WizardPage {
+    
+    private static final String TEMPLATES[] = {
+            "/templates/Basic_Header.asm",
+            "/templates/CIA_Registers.asm",
+            "/templates/Color_Defines.asm",
+            "/templates/KERNAL_Jump_Table.asm",
+            "/templates/SID_Registers.asm",
+            "/templates/VIC_Registers.asm"
+            };
 
   private final List<TemplateFileItem> templateFileList = new ArrayList<TemplateFileItem>();
 
@@ -133,24 +144,16 @@ public class TemplateFileWizardPage extends WizardPage {
    * Loads the templates.
    */
   private void loadFileTemplates() {
-    String path = Activator.getFilePathFromPlugin("templates");
-    File file = new File(path);
-
-    File[] files = file.listFiles();
-
-    if (files == null) {
-      return;
-    }
-
-    String item;
-
-    for (int i = 0; i < files.length; i++) {
-      item = files[i].getName();
-      if (files[i].isFile() && item.toLowerCase().endsWith(".asm")) {
-        item = item.substring(0, item.length() - 4).replace('_', ' ');
-        templateFileList.add(new TemplateFileItem(item, files[i]));
+      for (var template : TEMPLATES) {
+          var url = Activator.class.getClassLoader().getResource(template);
+          if (url == null) {
+              continue;
+          }
+          var name = new File(template).getName();
+          if (name.endsWith(".asm")) {
+              templateFileList.add(new TemplateFileItem(name.substring(0, name.length() - 4), template));
+          }
       }
-    }
   }
 
   /**
@@ -177,9 +180,9 @@ public class TemplateFileWizardPage extends WizardPage {
    * 
    * @return The selected file.
    */
-  public File getSelectedFile() {
+  public String getSelectedTemplateContent() {
     TemplateFileItem tfi = getTemplateFileItem();
-    return tfi.getFile();
+    return tfi.getContent();
   }
 
   /**
@@ -191,7 +194,7 @@ public class TemplateFileWizardPage extends WizardPage {
     private String fDisplayName;
 
     /** Filename */
-    private File fFile;
+    private String fResource;
 
     /**
      * Initialize the item with the given values.
@@ -199,16 +202,22 @@ public class TemplateFileWizardPage extends WizardPage {
      * @param displayName the display name
      * @param file Name of file
      */
-    public TemplateFileItem(String displayName, File file) {
+    public TemplateFileItem(String displayName, String resource) {
       fDisplayName = displayName;
-      fFile = file;
+      fResource = resource;
     }
 
     /**
      * @return the name of file
      */
-    public File getFile() {
-      return fFile;
+    public String getContent() {
+        try {
+            try (var stream = Activator.class.getClassLoader().getResourceAsStream(fResource)) {
+                return new String(stream.readAllBytes(), StandardCharsets.UTF_8);
+            }
+        } catch (IOException e) {
+          return "<internal error>";
+        }
     }
 
     /**

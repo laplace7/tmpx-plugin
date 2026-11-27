@@ -40,6 +40,11 @@ public class Constants {
 	public static final String PLUGIN_ID = "at.laplace.tmpxplugin"; //$NON-NLS-1$
 
 	/**
+	 * The Editor ID.
+	 */
+	public static final String EDITOR_ID = "at.laplace.tempxplugin.AsmEditor";
+	
+	/**
 	 * The Builder ID.
 	 */
 	public static final String BUILDER_ID = "at.laplace.tmpxplugin.builder"; //$NON-NLS-1$
