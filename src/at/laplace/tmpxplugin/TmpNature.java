@@ -46,14 +46,7 @@ public class TmpNature implements IProjectNature {
   public void configure() throws CoreException {
     IProjectDescription desc = project.getDescription();
     ICommand[] commands = desc.getBuildSpec();
-    boolean found = false;
-
-    for (int i = 0; i < commands.length; ++i) {
-      if (commands[i].getBuilderName().equals(Constants.BUILDER_ID)) {
-        found = true;
-        break;
-      }
-    }
+    boolean found = indexOfBuilder(commands, Constants.BUILDER_ID) != -1;
     if (!found) {
       // add builder to project
       ICommand command = desc.newCommand();
@@ -67,11 +60,30 @@ public class TmpNature implements IProjectNature {
       project.setDescription(desc, null);
     }
   }
+  
+  private static int indexOfBuilder(ICommand[] commands, String name) {
+      for (int i = 0; i < commands.length; ++i) {
+          if (commands[i].getBuilderName().equals(name)) {
+            return i;
+          }
+        }
+      return -1;
+  }
 
   /**
    * {@inheritDoc}
    */
   public void deconfigure() throws CoreException {
+      IProjectDescription desc = project.getDescription();
+      ICommand[] commands = desc.getBuildSpec();
+      int index = indexOfBuilder(commands, Constants.BUILDER_ID);
+      if (index != -1) {
+          var newCommands = new ICommand[commands.length - 1];
+          System.arraycopy(commands, 0, newCommands, 0, index);
+          System.arraycopy(commands, index + 1, newCommands, index, commands.length - index - 1);
+          desc.setBuildSpec(newCommands);
+          project.setDescription(desc, null);
+      }
   }
 
   /**
