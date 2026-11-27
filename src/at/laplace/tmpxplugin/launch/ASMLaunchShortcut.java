@@ -65,14 +65,13 @@ public class ASMLaunchShortcut implements ILaunchShortcut {
 
 		Object firstSelection = structuredSelection.getFirstElement();
 
-		if (!(firstSelection instanceof IFile)) {
+		if (!(firstSelection instanceof IFile file)) {
 			Activator.getDefault().getLog().log(
 					new Status(Status.ERROR, Constants.PLUGIN_ID, Status.OK,
 							Messages.LAUNCH_ERROR, new FileNotFoundException("Selection is not an IFile " + firstSelection)));
 			return;
 		}
 		
-		IFile file = (IFile) firstSelection;
 		var extension = file.getFileExtension();
 		boolean isProgram = extension != null && Patterns.EXTENSION_PATTERN_PROGRAM.matcher(extension).matches();
 		boolean isSource = extension != null && Patterns.EXTENSION_PATTERN_MAINFILES.matcher(extension).matches();
